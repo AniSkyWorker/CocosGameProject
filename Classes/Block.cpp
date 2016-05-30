@@ -1,61 +1,68 @@
-#define TOTAL_PUFFS 3
-
-
 #include "Block.h"
 
-Block::~Block () {
-    
-    _chimneys.clear();
-    _wallTiles.clear();
-    _roofTiles.clear();
-    
-    CC_SAFE_RELEASE(_puffAnimation);
-    CC_SAFE_RELEASE(_puffSpawn);
-    CC_SAFE_RELEASE(_puffMove);
-    CC_SAFE_RELEASE(_puffFade);
-    CC_SAFE_RELEASE(_puffScale);
+namespace
+{
+	const int c_steamCount = 3;
+	const int c_wTileCount = 8;
+	const int c_hTileCount = 6;
 }
 
-Block::Block () : _wallTiles(20), _roofTiles(5), _chimneys(5){
+Block::~Block()
+{
+    m_chimneys.clear();
+    m_wallTiles.clear();
+    m_roofTiles.clear();
     
-    //get screen size
-	m_screenSize = Director::getInstance()->getWinSize();
-    m_tileWidth = m_screenSize.width / TILE_W_SIZE;
-    m_tileHeight = m_screenSize.height / TILE_H_SIZE;
-    _puffing = false;
-    this->setVisible(false);
+    CC_SAFE_RELEASE(m_steamAnimation);
+    CC_SAFE_RELEASE(m_steamSpawn);
+    CC_SAFE_RELEASE(m_steamMove);
+    CC_SAFE_RELEASE(m_steamFade);
+    CC_SAFE_RELEASE(m_steamScale);
 }
 
-Block * Block::create () 
+Block::Block ()
+	: m_wallTiles(20)
+	, m_roofTiles(5)
+	, m_chimneys(5)
+	, m_puffing(false)
+	, m_screenSize(Director::getInstance()->getWinSize())
+	, m_tileWidth(m_screenSize.width / c_wTileCount)
+	, m_tileHeight(m_screenSize.height / c_hTileCount)
+{
+    setVisible(false);
+}
+
+Block* Block::Create() 
 {
     auto block = new Block();
 	if (block && block->initWithSpriteFrameName("blank.png"))
 	{
 		block->autorelease();
-        block->initBlock();
+        block->InitBlock();
 		return block;
 	}
 	CC_SAFE_DELETE(block);
 	return nullptr;
 }
 
-void Block::setPuffing (bool value) {
+void Block::SetPuffing(bool value) 
+{
+    m_puffing = value;
     
-    _puffing = value;
-    
-    if (value) {
-        this->runAction( _puffSpawn->clone());
-        auto hide = Sequence::create(DelayTime::create(2.5f),
-                                            CallFunc::create(std::bind(&Block::hidePuffs, this)),
-                                             nullptr);
-        this->runAction(hide);
-    } else {
-        //reset all puffs
-        _puffIndex = 0;
-        for (auto chimney : _chimneys)
+    if (value) 
+	{
+        runAction(m_steamSpawn->clone());
+        auto hide = Sequence::create(DelayTime::create(2.5f), CallFunc::create(std::bind(&Block::HidePuffs, this)), nullptr);
+		runAction(hide);
+    } 
+	else 
+	{
+        m_steamIndex = 0;
+        for (auto chimney : m_chimneys)
         {
-            for (int j = 0; j < TOTAL_PUFFS; j++) {
-                auto puff = (Sprite *) chimney->getChildByTag(j);
+            for (int j = 0; j < c_steamCount; j++)
+			{
+                auto puff = (Sprite *)chimney->getChildByTag(j);
                 puff->setVisible(false);
                 puff->stopAllActions();
                 puff->setScale(1.0);
@@ -63,33 +70,42 @@ void Block::setPuffing (bool value) {
                 puff->setPosition(Vec2(0,0));
             }
         }
-
     }
-    
 }
 
-void Block::hidePuffs()
+void Block::HidePuffs()
 {
-    setPuffing(false);
+    SetPuffing(false);
 }
 
+int Block::GetLeft() const
+{
+	return _position.x;
+}
+
+int Block::GetRight() const
+{
+	return _position.x + m_width;
+}
+
+int Block::GetTop() const
+{
+	return m_height;
+}
 
 void Block::SetupBlock(int width, int height, BlockType type)
 {
-    setPuffing(false);
-    
+    SetPuffing(false);
+ 
     m_type = type;
-    
     m_width = width * m_tileWidth;
-    m_height = height * m_tileHeight + m_tileHeight * 0.49f;
+    m_height = m_tileHeight * (height + 0.5f);
     setPositionY(m_height);
     
     SpriteFrame * wallFrame;
-    SpriteFrame * roofFrame = rand() % 10 > 6 ? _roof1 : _roof2;
-    
-    
-    int num_chimneys;
-    float chimneyX[] = {0,0,0,0,0};
+    SpriteFrame * roofFrame = rand() % 100 > 60 ? m_roof1 : m_roof2;
+   
+	std::vector<float> chimneys;
     
     switch (type) 
 	{
@@ -98,109 +114,116 @@ void Block::SetupBlock(int width, int height, BlockType type)
         return;
            
 	case BlockType::First:
-        wallFrame = _tile1;
-        chimneyX[0] = 0.2f;
-        chimneyX[1] = 0.8f;
-        num_chimneys = 2;
+        wallFrame = m_tile1;
+		chimneys.push_back(0.2f);
+		chimneys.push_back(0.8f);
         break;
 
 	case BlockType::Second:
-        wallFrame = _tile2;
-        chimneyX[0] = 0.2f;
-        chimneyX[1] = 0.8f;
-        chimneyX[2] = 0.5f;
-        num_chimneys = 3;
+        wallFrame = m_tile2;
+		chimneys.push_back(0.2f);
+		chimneys.push_back(0.8f);
+		chimneys.push_back(0.5f);
         break;
 
 	case BlockType::Third:
-        wallFrame = _tile3;
-        chimneyX[0] = 0.2f;
-        chimneyX[1] = 0.8f;
-        chimneyX[2] = 0.5f;
-        num_chimneys = 3;
+        wallFrame = m_tile3;
+		chimneys.push_back(0.2f);
+		chimneys.push_back(0.8f);
+		chimneys.push_back(0.5f);
         break;
 
 	case BlockType::Forth:
-        wallFrame = _tile4;
-        chimneyX[0] = 0.2f;
-        chimneyX[1] = 0.5f;
-        num_chimneys = 2;
+        wallFrame = m_tile4;
+		chimneys.push_back(0.2f);
+		chimneys.push_back(0.5f);
         break;
     }
     
 	
-    for ( int i = 0; i < _chimneys.size(); i++) {
-    	auto chimney = _chimneys.at(i);
-        if (i < num_chimneys) {
-            chimney->setPosition( Vec2 (chimneyX[i] * m_width, 0) );
+    for ( int i = 0; i < m_chimneys.size(); i++) 
+	{
+    	auto chimney = m_chimneys.at(i);
+        if (i < chimneys.size())
+		{
+            chimney->setPosition(Vec2(chimneys[i] * m_width, 0));
             chimney->setVisible(true);
-            
-        } else {
+        }
+		else 
+		{
             chimney->setVisible(false);
         }
     }
     
-    this->setVisible(true);
+	setVisible(true);
     
-    for (auto tile : _roofTiles) {
-        if (tile->getPositionX() < m_width) {
+    for (auto tile : m_roofTiles)
+	{
+        if (tile->getPositionX() < m_width)
+		{
             tile->setVisible(true);
-            tile->setDisplayFrame(roofFrame);
-        } else {
+            tile->setSpriteFrame(roofFrame);
+        }
+		else 
+		{
             tile->setVisible(false);
         }
     }
     
-    for (auto tile : _wallTiles) {
-        if (tile->getPositionX() < m_width && tile->getPositionY() > -m_height) {
+    for (auto tile : m_wallTiles) 
+	{
+        if (tile->getPositionX() < m_width && tile->getPositionY() > -m_height)
+		{
             tile->setVisible(true);
-            tile->setDisplayFrame(wallFrame);
-        } else {
+            tile->setSpriteFrame(wallFrame);
+        }
+		else 
+		{
             tile->setVisible(false);
         }
     }
 }
 
-void Block::initBlock() {
-
+void Block::InitBlock() 
+{
+    m_tile1 = SpriteFrameCache::getInstance()->getSpriteFrameByName("building_1.png");
+    m_tile2 = SpriteFrameCache::getInstance()->getSpriteFrameByName("building_2.png");
+    m_tile3 = SpriteFrameCache::getInstance()->getSpriteFrameByName("building_3.png");
+    m_tile4 = SpriteFrameCache::getInstance()->getSpriteFrameByName("building_4.png");
     
-    _tile1 = SpriteFrameCache::getInstance()->getSpriteFrameByName("building_1.png");
-    _tile2 = SpriteFrameCache::getInstance()->getSpriteFrameByName ("building_2.png");
-    _tile3 = SpriteFrameCache::getInstance()->getSpriteFrameByName ("building_3.png");
-    _tile4 = SpriteFrameCache::getInstance()->getSpriteFrameByName ("building_4.png");
+    m_roof1 = SpriteFrameCache::getInstance()->getSpriteFrameByName ("roof_1.png");
+    m_roof2 = SpriteFrameCache::getInstance()->getSpriteFrameByName ("roof_2.png");
     
-    _roof1 = SpriteFrameCache::getInstance()->getSpriteFrameByName ("roof_1.png");
-    _roof2 = SpriteFrameCache::getInstance()->getSpriteFrameByName ("roof_2.png");
-    
-
-    //create tiles
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 5; i++) 
+	{
         auto tile = Sprite::createWithSpriteFrameName("roof_1.png");
         tile->setAnchorPoint(Vec2(0, 1));
         tile->setPosition(Vec2(i * m_tileWidth, 0));
         tile->setVisible(false);
-        this->addChild(tile, kMiddleground, kRoofTile);
-        _roofTiles.pushBack(tile);
+        addChild(tile, kMiddleground, TileType::RoofTile);
+        m_roofTiles.pushBack(tile);
         
-        for (int j = 0; j < 4; j++) {
+        for (int j = 0; j < 4; j++)
+		{
             tile = Sprite::createWithSpriteFrameName("building_1.png");
             tile->setAnchorPoint(Vec2(0, 1));
             tile->setPosition(Vec2(i * m_tileWidth, -1 * (m_tileHeight * 0.47f + j * m_tileHeight)));
             tile->setVisible(false);
-            this->addChild(tile, kBackground, kWallTile);
-            _wallTiles.pushBack(tile);
+			addChild(tile, kBackground, TileType::WallTile);
+            m_wallTiles.pushBack(tile);
         }
         
     }
        
-    
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 5; i++)
+	{
         auto chimney = Sprite::createWithSpriteFrameName("chimney.png");
         chimney->setVisible(false);
-        this->addChild(chimney, kForeground, kChimney);
-        _chimneys.pushBack(chimney);
+        this->addChild(chimney, kForeground, TileType::Chimney);
+        m_chimneys.pushBack(chimney);
         
-        for (int j = 0; j < TOTAL_PUFFS; j++) {
+        for (int j = 0; j < c_steamCount; j++)
+		{
             auto puff = Sprite::createWithSpriteFrameName("puff_1.png");
             puff->setAnchorPoint(Vec2(0,-0.5));
             puff->setVisible(false);
@@ -211,9 +234,10 @@ void Block::initBlock() {
     
     Animation* animation;
     animation = Animation::create();
-    SpriteFrame * frame;
+    SpriteFrame* frame;
 
-    for(int i = 1; i <= 4; i++) {
+    for(int i = 1; i <= 4; i++) 
+	{
         frame = SpriteFrameCache::getInstance()->getSpriteFrameByName(String::createWithFormat("puff_%i.png", i)->getCString());
         animation->addSpriteFrame(frame);
     }
@@ -221,45 +245,40 @@ void Block::initBlock() {
     animation->setDelayPerUnit(0.75f / 4.0f);
     animation->setRestoreOriginalFrame(false);
     animation->setLoops(-1);
-    _puffAnimation = Animate::create(animation);
-    _puffAnimation->retain();
+    m_steamAnimation = Animate::create(animation);
+    m_steamAnimation->retain();
 
-    _puffSpawn = Repeat::create(Sequence::create(DelayTime::create(0.5f),
-                                                 CallFunc::create(std::bind(&Block::createPuff, this)),
-                                  nullptr), TOTAL_PUFFS);
-    _puffSpawn->retain();
+	m_steamMove = MoveBy::create(1.0f, Vec2(-100, 80));
+	m_steamMove->retain();
+	m_steamFade = FadeOut::create(2.0f);
+	m_steamFade->retain();
+	m_steamScale = ScaleBy::create(1.5f, 1.5);
+	m_steamScale->retain();
 
-    _puffMove = MoveBy::create(1.0f, Vec2(-100,80));
-    _puffMove->retain();
-    _puffFade = FadeOut::create(2.0f);
-    _puffFade->retain();
-    _puffScale = ScaleBy::create(1.5f, 1.5);
-    _puffScale->retain();
+    m_steamSpawn = Repeat::create(Sequence::create(DelayTime::create(0.5f), CallFunc::create(std::bind(&Block::CreateSteam, this)), nullptr), c_steamCount);
+    m_steamSpawn->retain();
     
-    
-    _puffIndex = 0;
+    m_steamIndex = 0;
 }
 
-
-void Block::createPuff () {
-    
-    
-    for ( auto chimney : _chimneys) {
-        if (chimney->isVisible()) {
-            
-            auto puff = chimney->getChildByTag(_puffIndex);
+void Block::CreateSteam() 
+{  
+    for ( auto chimney : m_chimneys)
+	{
+        if (chimney->isVisible())
+		{
+            auto puff = chimney->getChildByTag(m_steamIndex);
             puff->setVisible(true);
             puff->stopAllActions();
             puff->setScale(1.0);
             puff->setOpacity(255);
             puff->setPosition(Vec2(0,0));
-            puff->runAction( _puffAnimation->clone());
-            puff->runAction( _puffMove->clone());
-            puff->runAction( _puffScale->clone());
-            
+            puff->runAction(m_steamAnimation->clone());
+            puff->runAction(m_steamMove->clone());
+            puff->runAction(m_steamScale->clone()); 
         }
     }
     
-    _puffIndex++;
-    if (_puffIndex == TOTAL_PUFFS) _puffIndex = 0;
+    m_steamIndex++;
+	m_steamIndex = (m_steamIndex == c_steamCount)? 0 : m_steamIndex;
 }

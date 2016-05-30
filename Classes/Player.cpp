@@ -23,7 +23,7 @@ Player::Player()
     m_floating = false;
     m_nextPosition = Vec2(0,0);
 	m_nextPosition.y = m_screenSize.height * 0.6f;
-	m_playerState = PlayerState::PlayerMoving;
+	m_gameState = PlayerState::PlayerMoving;
     m_jumping = false;
     m_hasFloated = false;
 }
@@ -50,7 +50,7 @@ void Player::update(float dt)
 	m_speed = m_speed + c_acceleraton <= m_maxSpeed ? m_speed + c_acceleraton : m_speed;
     m_velocityVec.x = m_speed;
     
-	switch (m_playerState)
+	switch (m_gameState)
 	{
 	case PlayerState::PlayerMoving:
 		m_velocityVec.y -= G_FORCE;
@@ -83,7 +83,7 @@ void Player::update(float dt)
     
     if (m_jumping)
 	{
-        m_playerState = PlayerState::PlayerFalling;
+        m_gameState = PlayerState::PlayerFalling;
         m_velocityVec.y += PLAYER_JUMP * 0.25f;
 		if (m_velocityVec.y > PLAYER_JUMP)
 		{
@@ -120,7 +120,7 @@ void Player::update(float dt)
 	}
 }
 
-void Player::reset() 
+void Player::Reset() 
 {
     m_speed = PLAYER_INITIAL_SPEED;
     m_maxSpeed = PLAYER_INITIAL_SPEED;
@@ -130,7 +130,7 @@ void Player::reset()
     this->setRotation(0);
     m_nextPosition.y = m_screenSize.height * 0.6f;
     this->setPosition(Vec2( m_screenSize.width * 0.2f, m_nextPosition.y ));
-    m_playerState = PlayerState::PlayerMoving;
+    m_gameState = PlayerState::PlayerMoving;
     m_jumping = false;
     m_hasFloated = false;
 }

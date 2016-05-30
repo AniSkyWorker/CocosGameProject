@@ -28,7 +28,7 @@ public:
 	Player(void);
 	virtual ~Player(void);
 	
-	CC_SYNTHESIZE(PlayerState, m_playerState, State);
+	CC_SYNTHESIZE(PlayerState, m_gameState, State);
 	CC_SYNTHESIZE(bool, _inAir, InAir);
 	CC_SYNTHESIZE_READONLY(bool, m_floating, Floating);
     CC_SYNTHESIZE(bool, m_jumping, Jumping);
@@ -39,10 +39,11 @@ public:
 	virtual void update (float dt);
     
     void setFloating (bool value);
-    void reset (void);
+    void Reset (void);
     
-	inline virtual void place () { 
-		this->setPositionY( m_nextPosition.y );
+	inline virtual void place() 
+	{ 
+		setPositionY(m_nextPosition.y);
         if (m_velocityVec.x > 0 && this->getPositionX() < m_screenSize.width * 0.2f) {
             this->setPositionX(this->getPositionX() + m_velocityVec.x);
             if (this->getPositionX() > m_screenSize.width * 0.2f) {
@@ -51,19 +52,19 @@ public:
         }
 	};
     
-    inline int left() {
+    inline int GetLeft() {
     	return this->getPositionX() - m_width * 0.5f;
 	}
     
-	inline int right() {
+	inline int GetRight() {
     	return this->getPositionX() + m_width * 0.5f;
 	}
     
-    inline int top() {
+    inline int GetTop() {
     	return this->getPositionY() ;
     }
     
-    inline int bottom() {
+    inline int GetBottom() {
 		return this->getPositionY() - m_height  ;
     }
     

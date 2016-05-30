@@ -1,18 +1,9 @@
 #pragma once
-#define TILE_H_SIZE 6
-#define TILE_W_SIZE 8
 
 #include "cocos2d.h"
 #include "GameSprite.h"
 
 USING_NS_CC;
-
-
-enum {
-    kWallTile,
-    kRoofTile,
-    kChimney
-};
 
 enum class BlockType 
 {
@@ -23,67 +14,55 @@ enum class BlockType
     Forth
 };
 
-class Block : public GameSprite {
-    
-    Size m_screenSize;
-    
-    Vector<Sprite*> _wallTiles;
-    Vector<Sprite*> _roofTiles;
-    
-    SpriteFrame * _tile1;
-    SpriteFrame * _tile2;
-    SpriteFrame * _tile3;
-    SpriteFrame * _tile4;
-    
-    SpriteFrame * _roof1;
-    SpriteFrame * _roof2;
-    
-    Action * _puffAnimation;
-    Action * _puffSpawn;
-    Action * _puffMove;
-    Action * _puffFade;
-    Action * _puffScale;
-    
-    
-    int m_tileWidth;
-    int m_tileHeight;
-    int _puffIndex;
-    
-    
-    void initBlock(void);
-    void createPuff(void);
+class Block : public GameSprite 
+{
+	enum TileType
+	{
+		WallTile,
+		RoofTile,
+		Chimney
+	};
     
 public:
-    
-    CC_SYNTHESIZE(BlockType, m_type, Type);
-    CC_SYNTHESIZE_READONLY(bool, _puffing, Puffing);
-	CC_SYNTHESIZE(Vector<Sprite*>, _chimneys, Chimneys);
-    
-    
     Block();
     virtual ~Block();
     
-    static Block * create();
+    static Block* Create();
     void SetupBlock(int width, int height, BlockType type);
-    void setPuffing (bool value);
-    void hidePuffs();
+    void SetPuffing(bool value);
+    void HidePuffs();
     
-    
-    inline virtual int left() {
-    	return this->getPositionX();
-	}
-    
-	inline virtual int right() {
-    	return this->getPositionX() + m_width;
-	}
-    
-    inline virtual int top() {
-        return this->getHeight();
-    }
-    
-    inline virtual int bottom() {
-		return 0;
-    }
-    
-    
+	int GetLeft() const;
+	int GetRight() const;
+	int GetTop() const;
+
+	CC_SYNTHESIZE(BlockType, m_type, Type);
+	CC_SYNTHESIZE_READONLY(bool, m_puffing, Puffing);
+
+private:
+	void InitBlock();
+	void CreateSteam();
+
+	Size m_screenSize;
+
+	Vector<Sprite*> m_wallTiles;
+	Vector<Sprite*> m_roofTiles;
+	Vector<Sprite*> m_chimneys;
+
+	SpriteFrame * m_tile1;
+	SpriteFrame * m_tile2;
+	SpriteFrame * m_tile3;
+	SpriteFrame * m_tile4;
+	int m_tileWidth;
+	int m_tileHeight;
+
+	SpriteFrame * m_roof1;
+	SpriteFrame * m_roof2;
+
+	Action * m_steamAnimation;
+	Action * m_steamSpawn;
+	Action * m_steamMove;
+	Action * m_steamFade;
+	Action * m_steamScale;
+	int m_steamIndex;
 };
