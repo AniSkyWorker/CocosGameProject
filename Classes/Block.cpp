@@ -20,7 +20,7 @@ Block::~Block()
     CC_SAFE_RELEASE(m_steamScale);
 }
 
-Block::Block ()
+Block::Block()
 	: m_wallTiles(20)
 	, m_roofTiles(5)
 	, m_chimneys(5)
@@ -62,12 +62,9 @@ void Block::SetPuffing(bool value)
         {
             for (int j = 0; j < c_steamCount; j++)
 			{
-                auto puff = (Sprite *)chimney->getChildByTag(j);
-                puff->setVisible(false);
-                puff->stopAllActions();
-                puff->setScale(1.0);
-                puff->setOpacity(255);
-                puff->setPosition(Vec2(0,0));
+                auto steam = chimney->getChildByTag(j);
+				steam->setVisible(false);
+				steam->stopAllActions();
             }
         }
     }
@@ -267,15 +264,15 @@ void Block::CreateSteam()
 	{
         if (chimney->isVisible())
 		{
-            auto puff = chimney->getChildByTag(m_steamIndex);
-            puff->setVisible(true);
-            puff->stopAllActions();
-            puff->setScale(1.0);
-            puff->setOpacity(255);
-            puff->setPosition(Vec2(0,0));
-            puff->runAction(m_steamAnimation->clone());
-            puff->runAction(m_steamMove->clone());
-            puff->runAction(m_steamScale->clone()); 
+            auto steam = chimney->getChildByTag(m_steamIndex);
+			steam->setVisible(true);
+			steam->stopAllActions();
+			steam->setScale(1.0);
+			steam->setOpacity(255);
+			steam->setPosition(Vec2(0,0));
+			steam->runAction(m_steamAnimation->clone());
+			steam->runAction(m_steamMove->clone());
+			steam->runAction(m_steamScale->clone());
         }
     }
     

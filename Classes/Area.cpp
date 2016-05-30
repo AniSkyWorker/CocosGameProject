@@ -2,23 +2,14 @@
 #include "SimpleAudioEngine.h"
 
 using namespace CocosDenshion;
+USING_NS_CC;
 
 namespace
 {
 	const int c_increaseEmptyTimeInterval = 5000;
 }
 
-int patterns[] = {1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,3,3,3};
-int widths[] = {2,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4};
-int heights[] = {0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,2,2,2,3,3,3,3,3,3,4};
-int types[] = {1,2,3,4,1,3,2,4,3,2,1,4,2,3,1,4,2,3,1,2,3,2,3,4,1,2,4,3,1,3,1,4,2,4,2,1,2,3};
-
-vector<int> m_blockKits (patterns, patterns + sizeof(patterns) / sizeof(int));
-vector<int> m_blockWidths (widths, widths + sizeof(widths) / sizeof(int));
-vector<int> m_blockHeights (heights, heights + sizeof(heights) / sizeof(int));
-vector<int> m_blockTypes (types, types + sizeof(types) / sizeof(int));
-
-Area::~Area ()
+Area::~Area()
 {
     m_blockPool.clear();
     m_currentArea.clear();
@@ -35,8 +26,10 @@ Area::Area()
 	,m_blockPool(20)
 	,m_currentArea(20)
 	,m_showEmpty(false)
+	,m_blockData()
 {
 }
+
 Area* Area::create()
 {
     auto terrain = new Area();
@@ -67,9 +60,9 @@ void Area::InitTerrain()
 	
 	m_currentMinWidth = m_screenSize.width * 1.5f;
     
-    random_shuffle(m_blockKits.begin(), m_blockKits.end());
-    random_shuffle(m_blockWidths.begin(), m_blockWidths.end());
-    random_shuffle(m_blockHeights.begin(), m_blockHeights.end());
+    random_shuffle(m_blockData.blockKits.begin(), m_blockData.blockKits.end());
+    random_shuffle(m_blockData.blockWidths.begin(), m_blockData.blockWidths.end());
+    random_shuffle(m_blockData.blockHeights.begin(), m_blockData.blockHeights.end());
 	
 	AddBlocks(0);
 }
@@ -141,7 +134,6 @@ void Area::СheckCollision(Player* player)
 			if (player->GetBottom() + player->getHeight() * 0.2f < block->GetTop())
 			{
                 player->setState(PlayerState::PlayerDying);
-                // SimpleAudioEngine::getInstance()->stopBackgroundMusic();
                 SimpleAudioEngine::getInstance()->playEffect("hitBuilding.wav");
                 return;
             }
@@ -158,7 +150,6 @@ void Area::СheckCollision(Player* player)
         if (player->getState() != PlayerState::PlayerMoving)
 		{
             player->setState(PlayerState::PlayerMoving);
-        //    SimpleAudioEngine::getInstance()->stopAllEffects(); 
         }
 		player->setFloating(false);
 	}
@@ -196,7 +187,7 @@ void Area::Move(float xMove)
         m_currentArea.pushBack(block);
         _position.x += block->getWidth();
 		
-		float width = getWidth() - block->getWidth() - (m_currentArea.at(0))->getWidth();
+		float width = GetAreaWidth() - block->getWidth() - (m_currentArea.at(0))->getWidth();
 		InitBlock(block);
 		AddBlocks(width);
 	}
@@ -258,9 +249,9 @@ void Area::InitBlock(Block * block)
 	int blockHeight;
     block->SetPuffing(false);
 	
-    BlockType type = static_cast<BlockType>(m_blockTypes[m_currentTypeIndex]);
+    BlockType type = static_cast<BlockType>(m_blockData.blockTypes[m_currentTypeIndex]);
 	m_currentTypeIndex++;
-	m_currentTypeIndex = (m_currentTypeIndex == m_blockTypes.size()) ? 0 : m_currentTypeIndex;
+	m_currentTypeIndex = (m_currentTypeIndex == m_blockData.blockTypes.size()) ? 0 : m_currentTypeIndex;
 
 	if (m_startGame)
 	{
@@ -273,11 +264,11 @@ void Area::InitBlock(Block * block)
         } 
 		else
 		{
-			blockWidth = m_blockWidths[m_currentWidthIndex];
+			blockWidth = m_blockData.blockWidths[m_currentWidthIndex];
 			
-            if (m_blockHeights[m_currentHeightIndex] != 0)
+            if (m_blockData.blockHeights[m_currentHeightIndex] != 0)
 			{
-				blockHeight = m_blockHeights[m_currentHeightIndex];
+				blockHeight = m_blockData.blockHeights[m_currentHeightIndex];
 
 				if (blockHeight - m_lastBlockHeight > 2 && m_currentEmptySize == 2)
 				{
@@ -292,16 +283,16 @@ void Area::InitBlock(Block * block)
 			m_currentWidthIndex++;
 			m_currentHeightIndex++;
 
-			if (m_currentWidthIndex == m_blockWidths.size())
+			if (m_currentWidthIndex == m_blockData.blockWidths.size())
 			{
-				random_shuffle(m_blockWidths.begin(), m_blockWidths.end());
+				random_shuffle(m_blockData.blockWidths.begin(), m_blockData.blockWidths.end());
 				m_currentWidthIndex = 0;
 			}
 
-            if (m_currentHeightIndex == m_blockHeights.size())
+            if (m_currentHeightIndex == m_blockData.blockHeights.size())
 			{
                 m_currentHeightIndex = 0;
-                random_shuffle(m_blockHeights.begin(), m_blockHeights.end());
+                random_shuffle(m_blockData.blockHeights.begin(), m_blockData.blockHeights.end());
             }
 
 			block->SetupBlock(blockWidth, blockHeight, type);
@@ -309,13 +300,13 @@ void Area::InitBlock(Block * block)
             m_lastBlockHeight = blockHeight;
 			
 			m_currentKitCounter++;
-			if (m_currentKitCounter > m_blockKits[m_currentKitIndex]) 
+			if (m_currentKitCounter >  m_blockData.blockKits[m_currentKitIndex])
 			{
 				m_showEmpty = true;
 				m_currentKitIndex++;
-				if (m_currentKitIndex == m_blockKits.size())
+				if (m_currentKitIndex == m_blockData.blockKits.size())
 				{
-                    random_shuffle(m_blockKits.begin(), m_blockKits.end());
+                    random_shuffle(m_blockData.blockKits.begin(), m_blockData.blockKits.end());
 					m_currentKitIndex = 0;
 				}
 				m_currentKitCounter = 1;
@@ -328,5 +319,15 @@ void Area::InitBlock(Block * block)
 		m_lastBlockWidth = rand() % 2 + 2;
 		block->SetupBlock(m_lastBlockWidth, m_lastBlockHeight, type);
 	}
+}
+
+int Area::GetAreaWidth() const
+{
+	int width = 0;
+	for (auto block : m_currentArea)
+	{
+		width += block->getWidth();
+	}
+	return width;
 }
 
