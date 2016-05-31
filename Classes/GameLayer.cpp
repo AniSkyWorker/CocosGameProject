@@ -4,6 +4,11 @@
 USING_NS_CC;
 using namespace CocosDenshion;
 
+namespace 
+{
+	const float c_timeToSwitchDay = 20.f;
+}
+
 GameLayer::~GameLayer() 
 {
     CC_SAFE_RELEASE(m_cyclistsMoving);
@@ -43,6 +48,11 @@ void GameLayer::ResetGame()
     m_score = 0;
     m_speedIncreaseInterval = 15;
 	m_speedIncreaseTimer = 0;
+
+	m_daySwitchTimer = 0;
+	m_daySprite->setVisible(true);
+	m_nightSprite->setVisible(false);
+
     m_scoreDisplay->setString(String::createWithFormat("%i", (int)m_score)->getCString());
     m_scoreDisplay->setAnchorPoint(Vec2(1,0));
     m_scoreDisplay->setPosition(Vec2(m_screenSize.width * 0.95f, m_screenSize.height * 0.88f));
@@ -112,14 +122,18 @@ void GameLayer::UpdateParallax()
 		m_foreground->setPositionX(-dx);
 	}
 
+	
 	for (auto cloud : m_clouds)
 	{
+		
 		cloud->setPositionX(cloud->getPositionX() - m_player->getVelocity().x * 0.8f);
 		if (cloud->getPositionX() + cloud->getBoundingBox().size.width * 0.5f < 0)
 		{
 			cloud->setPositionX(m_screenSize.width + cloud->getBoundingBox().size.width * 0.5f);
 		}
+		
 	}
+	
 }
 
 void GameLayer::UpdateÑyclists()
@@ -178,6 +192,20 @@ void GameLayer::UpdateTutorial()
 	}
 }
 
+void GameLayer::SwitchDay()
+{
+	if (m_nightSprite->isVisible())
+	{
+		m_nightSprite->setVisible(false);
+		m_daySprite->setVisible(true);
+	}
+	else
+	{
+		m_nightSprite->setVisible(true);
+		m_daySprite->setVisible(false);
+	}
+}
+
 void GameLayer::update(float dt) 
 {
 	if (!m_isRunning)
@@ -196,7 +224,7 @@ void GameLayer::update(float dt)
     
     m_player->update(dt);
     m_area->Move(m_player->getVelocity().x);
-    
+   
 	if (m_player->getState() != PlayerState::PlayerDying) 
 	{
 		m_area->ÑheckCollision(m_player); 
@@ -223,6 +251,13 @@ void GameLayer::update(float dt)
 	if (m_gameState > GameState::Tutorial)
 	{
 		UpdateTutorial();
+	}
+
+	m_daySwitchTimer += dt;
+	if (m_daySwitchTimer >= c_timeToSwitchDay)
+	{
+		m_daySwitchTimer = 0;
+		SwitchDay();
 	}
 }
 
@@ -341,9 +376,13 @@ void GameLayer::CreateGameScreen()
 
 void GameLayer::CreateFilling()
 {
-	auto bgNight = Sprite::create("bg.png");
-	bgNight->setPosition(Vec2(m_screenSize.width * 0.5f, m_screenSize.height * 0.5f));
-	addChild(bgNight, LayerType::Back);
+	m_daySprite = Sprite::create("bg_day.png");
+	m_daySprite->setPosition(Vec2(m_screenSize.width * 0.5f, m_screenSize.height * 0.5f));
+	addChild(m_daySprite, LayerType::Back);
+
+	m_nightSprite = Sprite::create("bg.png");
+	m_nightSprite->setPosition(Vec2(m_screenSize.width * 0.5f, m_screenSize.height * 0.5f));
+	addChild(m_nightSprite, LayerType::Back);
 
 	SpriteFrameCache::getInstance()->addSpriteFramesWithFile("sprite_sheet.plist");
 	m_mainBatchNode = SpriteBatchNode::create("sprite_sheet.png", 200);

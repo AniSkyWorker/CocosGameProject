@@ -42,20 +42,20 @@ bool AppDelegate::applicationDidFinishLaunching()
     
     std::vector<std::string> searchPaths;
     
-    if (screenSize.height > 768)
-	{
+   // if (screenSize.height > 768)
+//	{
         searchPaths.push_back("ipadhd");
-        director->setContentScaleFactor(1536/designSize.height);
-    }
-	else if (screenSize.height > 320) 
-	{
-        searchPaths.push_back("ipad");
-        director->setContentScaleFactor(768/designSize.height);
-    } else
-	{
-        searchPaths.push_back("iphone");
-        director->setContentScaleFactor(380/designSize.height);
-    }
+   //     director->setContentScaleFactor(1536/designSize.height);
+ //   }
+	//else if (screenSize.height > 320) 
+	//{
+    //    searchPaths.push_back("ipad");
+    //    director->setContentScaleFactor(768/designSize.height);
+  //  } else
+//	{
+  //      searchPaths.push_back("iphone");
+ //       director->setContentScaleFactor(380/designSize.height);
+ //   }
 	searchPaths.push_back("res");
     auto fileUtils = FileUtils::getInstance();
     fileUtils->setSearchPaths(searchPaths);

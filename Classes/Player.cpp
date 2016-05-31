@@ -214,6 +214,7 @@ void Player::SetFloating(bool value)
     } 
 	else
 	{
+		m_floatAnimation->retain();
         runAction(m_rideAnimation);
     }
 }
@@ -241,12 +242,9 @@ void Player::InitPlayer()
     m_rideAnimation->retain();
     
     
-    auto easeSwing = Sequence::create(
-           EaseInOut::create(RotateTo::create(0.8f, -10), 2),
-           EaseInOut::create(RotateTo::create(0.8f, 10), 2),
-           nullptr);
-    m_floatAnimation = RepeatForever::create( (ActionInterval*) easeSwing );
+    auto easeSwing = Sequence::create(EaseInOut::create(RotateTo::create(0.8f, -10), 2), EaseInOut::create(RotateTo::create(0.8f, 10), 2), nullptr);
+    m_floatAnimation = RepeatForever::create((ActionInterval*)easeSwing);
     m_floatAnimation->retain();
     
-    this->runAction(m_rideAnimation);
+    runAction(m_rideAnimation);
 }

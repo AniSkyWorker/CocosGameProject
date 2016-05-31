@@ -55,6 +55,8 @@ private:
 
 	void UpdateTutorial();
 
+	void SwitchDay();
+
 	Area* m_area;
 	Player* m_player;
 
@@ -68,6 +70,9 @@ private:
 	cocos2d::Sprite* m_cyclists;
 	cocos2d::Action* m_cyclistsAnimation;
 	cocos2d::Action* m_cyclistsMoving;
+
+	cocos2d::Sprite* m_daySprite;
+	cocos2d::Sprite* m_nightSprite;
 
 	cocos2d::Vector<cocos2d::Sprite*> m_clouds;
 
@@ -83,6 +88,7 @@ private:
 	float m_score;
 	int m_speedIncreaseInterval;
 	float m_speedIncreaseTimer;
+	float m_daySwitchTimer;
 };
 
 
