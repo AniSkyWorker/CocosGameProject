@@ -3,8 +3,6 @@
 #include "cocos2d.h"
 #include "GameSprite.h"
 
-USING_NS_CC;
-
 enum class BlockType 
 {
     Empty,
@@ -43,26 +41,26 @@ private:
 	void InitBlock();
 	void CreateSteam();
 
-	Size m_screenSize;
+	cocos2d::Size m_screenSize;
 
-	Vector<Sprite*> m_wallTiles;
-	Vector<Sprite*> m_roofTiles;
-	Vector<Sprite*> m_chimneys;
+	cocos2d::Vector<Sprite*> m_wallTiles;
+	cocos2d::Vector<Sprite*> m_roofTiles;
+	cocos2d::Vector<Sprite*> m_chimneys;
 
-	SpriteFrame * m_tile1;
-	SpriteFrame * m_tile2;
-	SpriteFrame * m_tile3;
-	SpriteFrame * m_tile4;
+	cocos2d::SpriteFrame * m_tile1;
+	cocos2d::SpriteFrame * m_tile2;
+	cocos2d::SpriteFrame * m_tile3;
+	cocos2d::SpriteFrame * m_tile4;
 	int m_tileWidth;
 	int m_tileHeight;
 
-	SpriteFrame * m_roof1;
-	SpriteFrame * m_roof2;
+	cocos2d::SpriteFrame * m_roof1;
+	cocos2d::SpriteFrame * m_roof2;
 
-	Action * m_steamAnimation;
-	Action * m_steamSpawn;
-	Action * m_steamMove;
-	Action * m_steamFade;
-	Action * m_steamScale;
+	cocos2d::Action * m_steamAnimation;
+	cocos2d::Action * m_steamSpawn;
+	cocos2d::Action * m_steamMove;
+	cocos2d::Action * m_steamFade;
+	cocos2d::Action * m_steamScale;
 	int m_steamIndex;
 };

@@ -1,5 +1,7 @@
 #include "Block.h"
 
+USING_NS_CC;
+
 namespace
 {
 	const int c_steamCount = 3;
@@ -138,7 +140,7 @@ void Block::SetupBlock(int width, int height, BlockType type)
     }
     
 	
-    for ( int i = 0; i < m_chimneys.size(); i++) 
+    for (int i = 0; i < m_chimneys.size(); i++) 
 	{
     	auto chimney = m_chimneys.at(i);
         if (i < chimneys.size())
@@ -197,7 +199,7 @@ void Block::InitBlock()
         tile->setAnchorPoint(Vec2(0, 1));
         tile->setPosition(Vec2(i * m_tileWidth, 0));
         tile->setVisible(false);
-        addChild(tile, kMiddleground, TileType::RoofTile);
+        addChild(tile, LayerType::Middle, TileType::RoofTile);
         m_roofTiles.pushBack(tile);
         
         for (int j = 0; j < 4; j++)
@@ -206,7 +208,7 @@ void Block::InitBlock()
             tile->setAnchorPoint(Vec2(0, 1));
             tile->setPosition(Vec2(i * m_tileWidth, -1 * (m_tileHeight * 0.47f + j * m_tileHeight)));
             tile->setVisible(false);
-			addChild(tile, kBackground, TileType::WallTile);
+			addChild(tile, LayerType::Back, TileType::WallTile);
             m_wallTiles.pushBack(tile);
         }
         
@@ -216,7 +218,7 @@ void Block::InitBlock()
 	{
         auto chimney = Sprite::createWithSpriteFrameName("chimney.png");
         chimney->setVisible(false);
-        this->addChild(chimney, kForeground, TileType::Chimney);
+        this->addChild(chimney, LayerType::Front, TileType::Chimney);
         m_chimneys.pushBack(chimney);
         
         for (int j = 0; j < c_steamCount; j++)
