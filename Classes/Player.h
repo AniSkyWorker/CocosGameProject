@@ -1,17 +1,7 @@
 ﻿#pragma once
 
-#define PLAYER_INITIAL_SPEED 8
-#define PLAYER_JUMP 42
-#define G_FORCE 1.5
-#define FLOATNG_GRAVITY 0.4f
-#define TERMINAL_VELOCITY 70
-#define FLOATING_FRICTION 0.98f
-#define AIR_FRICTION 0.99f
-
 #include "cocos2d.h"
 #include "GameSprite.h"
-
-USING_NS_CC;
 
 enum class PlayerState
 {
@@ -20,13 +10,12 @@ enum class PlayerState
     PlayerDying
 }; 
 
-
 class Player : public GameSprite
 {
 public:
 	
-	Player(void);
-	virtual ~Player(void);
+	Player();
+	~Player() override;
 	
 	CC_SYNTHESIZE(PlayerState, m_gameState, State);
 	CC_SYNTHESIZE(bool, _inAir, InAir);
@@ -34,66 +23,37 @@ public:
     CC_SYNTHESIZE(bool, m_jumping, Jumping);
     CC_SYNTHESIZE(float, m_maxSpeed, MaxSpeed);
     
-    static Player * create (void);
+    static Player* Create();
 	
-	virtual void update (float dt);
+	void update(float dt) override;
     
-    void setFloating (bool value);
-    void Reset (void);
+    void SetFloating(bool value);
+    void Reset();
     
-	inline virtual void place() 
-	{ 
-		setPositionY(m_nextPosition.y);
-        if (m_velocityVec.x > 0 && this->getPositionX() < m_screenSize.width * 0.2f) {
-            this->setPositionX(this->getPositionX() + m_velocityVec.x);
-            if (this->getPositionX() > m_screenSize.width * 0.2f) {
-                this->setPositionX(m_screenSize.width * 0.2f);
-            }
-        }
-	};
+	void Move();
     
-    inline int GetLeft() {
-    	return this->getPositionX() - m_width * 0.5f;
-	}
+	int GetLeft() const;
+	int GetRight() const;
+	int GetTop() const;
+	int GetBottom() const;
+
+	int GetExpectedLeft() const;
+	int GetExpectedRight() const;
     
-	inline int GetRight() {
-    	return this->getPositionX() + m_width * 0.5f;
-	}
-    
-    inline int GetTop() {
-    	return this->getPositionY() ;
-    }
-    
-    inline int GetBottom() {
-		return this->getPositionY() - m_height  ;
-    }
-    
-    inline int next_left() {
-    	return m_nextPosition.x - m_width * 0.5f;
-    }
-    
-    inline int next_right() {
-    	return m_nextPosition.x + m_width * 0.5f;
-    }
-    
-    inline int next_top() {
-    	return m_nextPosition.y ;
-    }
-    
-    inline int next_bottom() {
-    	return m_nextPosition.y - m_height;
-    }
+	int GetExpectedTop() const;
+	int GetExpectedBottom() const;
+
 private:
-	Action * m_rideAnimation;
-	Action * m_floatAnimation;
+	void InitPlayer();
+
+	cocos2d::Action * m_rideAnimation;
+	cocos2d::Action * m_floatAnimation;
 	float m_speed;
 	int m_floatingTimerMax;
 	float m_floatingTimer;
 	int m_floatingInterval;
 	bool m_hasFloated;
 
-	Size m_screenSize;
-
-	void initPlayer();
+	cocos2d::Size m_screenSize;
 };
 		

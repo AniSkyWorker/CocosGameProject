@@ -81,11 +81,11 @@ void GameLayer::GameOver()
 
 void GameLayer::UpdateSpritesPlacement()
 {
-	m_player->place();
+	m_player->Move();
 
-	if (m_player->getNextPosition().y > m_screenSize.height * 0.6f)
+	if (m_player->getExpectedPosition().y > m_screenSize.height * 0.6f)
 	{
-		m_mainBatchNode->setPositionY((m_screenSize.height * 0.6f - m_player->getNextPosition().y) * 0.8f);
+		m_mainBatchNode->setPositionY((m_screenSize.height * 0.6f - m_player->getExpectedPosition().y) * 0.8f);
 	}
 	else
 	{
@@ -95,7 +95,7 @@ void GameLayer::UpdateSpritesPlacement()
 
 void GameLayer::UpdateParallax()
 {
-	m_background->setPositionX(m_background->getPosition().x - m_player->getVector().x * 0.25f);
+	m_background->setPositionX(m_background->getPosition().x - m_player->getVelocity().x * 0.25f);
 	float dx;
 
 	if (m_background->getPositionX() < -m_background->getContentSize().width)
@@ -104,7 +104,7 @@ void GameLayer::UpdateParallax()
 		m_background->setPositionX(-dx);
 	}
 
-	m_foreground->setPositionX(m_foreground->getPosition().x - m_player->getVector().x * 4);
+	m_foreground->setPositionX(m_foreground->getPosition().x - m_player->getVelocity().x * 4);
 
 	if (m_foreground->getPositionX() < -m_foreground->getContentSize().width * 4)
 	{
@@ -114,7 +114,7 @@ void GameLayer::UpdateParallax()
 
 	for (auto cloud : m_clouds)
 	{
-		cloud->setPositionX(cloud->getPositionX() - m_player->getVector().x * 0.8f);
+		cloud->setPositionX(cloud->getPositionX() - m_player->getVelocity().x * 0.8f);
 		if (cloud->getPositionX() + cloud->getBoundingBox().size.width * 0.5f < 0)
 		{
 			cloud->setPositionX(m_screenSize.width + cloud->getBoundingBox().size.width * 0.5f);
@@ -152,7 +152,7 @@ void GameLayer::UpdateTutorial()
 	switch(m_gameState)
 	{
 	case GameState::TutorialJump:
-		if (m_player->getState() == PlayerState::PlayerFalling && m_player->getVector().y < 0)
+		if (m_player->getState() == PlayerState::PlayerFalling && m_player->getVelocity().y < 0)
 		{
 			m_cyclists->stopAllActions();
 			m_player->stopAllActions();
@@ -195,7 +195,7 @@ void GameLayer::update(float dt)
     }
     
     m_player->update(dt);
-    m_area->Move(m_player->getVector().x);
+    m_area->Move(m_player->getVelocity().x);
     
 	if (m_player->getState() != PlayerState::PlayerDying) 
 	{
@@ -204,7 +204,7 @@ void GameLayer::update(float dt)
 
 	UpdateSpritesPlacement();
 
-    if (m_player->getVector().x > 0) 
+    if (m_player->getVelocity().x > 0)
 	{
 		UpdateParallax();
 
@@ -251,7 +251,7 @@ bool GameLayer::OnTouchBegan(Touch * touch, Event* event)
             case GameState::Play:
                 if (m_player->getState() == PlayerState::PlayerFalling)
 				{
-					m_player->setFloating(m_player->getFloating() ? false : true);
+					m_player->SetFloating(m_player->getFloating() ? false : true);
                 }
 				else 
 				{
@@ -280,19 +280,19 @@ bool GameLayer::OnTouchBegan(Touch * touch, Event* event)
                 if (!m_player->getFloating())
 				{
 					m_cyclists->runAction(m_cyclistsMoving);
-                    m_player->setFloating (true);
+                    m_player->SetFloating (true);
                     m_isRunning = true;
                 }
                 break;
             case GameState::TutorialDrop:
 				m_cyclists->runAction(m_cyclistsMoving);
-                m_player->setFloating(false);
+                m_player->SetFloating(false);
                 m_isRunning = true;
                 break;
         }
     }
-    return true;
 
+    return true;
 }
 
 void GameLayer::OnTouchEnded(Touch* touch, Event* event)
@@ -404,10 +404,10 @@ void GameLayer::CreateFilling()
 
 void GameLayer::CreateGameObjects()
 {
-	m_area = Area::create();
+	m_area = Area::Create();
 	m_mainBatchNode->addChild(m_area, LayerType::Middle);
 
-	m_player = Player::create();
+	m_player = Player::Create();
 	m_mainBatchNode->addChild(m_player, LayerType::Back);
 
 	m_scoreDisplay = Label::createWithBMFont("font.fnt", "000000", TextHAlignment::CENTER);

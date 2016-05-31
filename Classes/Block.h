@@ -62,5 +62,6 @@ private:
 	cocos2d::Action * m_steamMove;
 	cocos2d::Action * m_steamFade;
 	cocos2d::Action * m_steamScale;
+
 	int m_steamIndex;
 };

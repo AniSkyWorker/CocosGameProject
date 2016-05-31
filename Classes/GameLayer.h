@@ -2,6 +2,7 @@
 
 #include "cocos2d.h"
 #include "SimpleAudioEngine.h"
+
 #include "Area.h"
 #include "Player.h"
 
@@ -21,13 +22,13 @@ class GameLayer : public cocos2d::Layer
 public:
     virtual ~GameLayer();
     virtual bool init() override;
-    static Scene* scene();
+    static cocos2d::Scene* scene();
     
     CREATE_FUNC(GameLayer);
     void update(float dt);
     
-	bool OnTouchBegan(Touch* touch, Event* event);
-    void OnTouchEnded(Touch* touch, Event* event);
+	bool OnTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
+    void OnTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event);
     
     void ShowTutorial(cocos2d::Ref* pSender);
     void StartGame(cocos2d::Ref* pSender);
@@ -68,7 +69,7 @@ private:
 	cocos2d::Action* m_cyclistsAnimation;
 	cocos2d::Action* m_cyclistsMoving;
 
-	cocos2d::Vector<Sprite*> m_clouds;
+	cocos2d::Vector<cocos2d::Sprite*> m_clouds;
 
 	cocos2d::SpriteBatchNode* m_mainBatchNode;
 	cocos2d::Label* m_tutorialLabel;

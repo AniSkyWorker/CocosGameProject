@@ -30,7 +30,7 @@ Area::Area()
 {
 }
 
-Area* Area::create()
+Area* Area::Create()
 {
     auto terrain = new Area();
 	if (terrain && terrain->initWithSpriteFrameName("blank.png"))
@@ -105,11 +105,11 @@ void Area::СheckCollision(Player* player)
 		if (player->GetRight() >= getPositionX() + block->GetLeft() 
 			&& player->GetLeft() <= getPositionX() + block->GetRight()
 			&& player->GetBottom() >= block->GetTop()
-			&& player->next_bottom() <= block->GetTop()
+			&& player->GetExpectedBottom() <= block->GetTop()
 			&& player->GetTop() > block->GetTop())
 		{
-            player->setNextPosition(Vec2(player->getNextPosition().x, block->GetTop() + player->getHeight()));
-			player->setVector(Vec2(player->getVector().x, 0));
+            player->setExpectedPosition(Vec2(player->getExpectedPosition().x, block->GetTop() + player->getHeight()));
+			player->setVelocity(Vec2(player->getVelocity().x, 0));
             player->setRotation(0.0);
             inAir = false;
             break;
@@ -124,13 +124,13 @@ void Area::СheckCollision(Player* player)
 		}
 
 		if (((player->GetBottom() < block->GetTop() && player->GetTop() > 0)
-        || (player->next_bottom() < block->GetTop() && player->next_top() > 0))
+        || (player->GetExpectedBottom() < block->GetTop() && player->GetExpectedTop() > 0))
 			&& player->GetRight() >= getPositionX() + block->getPositionX()
 			&& player->GetLeft() < getPositionX() + block->getPositionX())
 		{
             player->setPositionX(getPositionX() + block->getPositionX() - player->getWidth() * 0.5f);
-            player->setNextPosition(Vec2(getPositionX() + block->getPositionX() - player->getWidth() * 0.5f, player->getNextPosition().y));
-			player->setVector (Vec2(player->getVector().x * -0.5f, player->getVector().y));
+            player->setExpectedPosition(Vec2(getPositionX() + block->getPositionX() - player->getWidth() * 0.5f, player->getExpectedPosition().y));
+			player->setVelocity(Vec2(player->getVelocity().x * -0.5f, player->getVelocity().y));
 
 			if (player->GetBottom() + player->getHeight() * 0.2f < block->GetTop())
 			{
@@ -152,7 +152,7 @@ void Area::СheckCollision(Player* player)
 		{
             player->setState(PlayerState::PlayerMoving);
         }
-		player->setFloating(false);
+		player->SetFloating(false);
 	}
 }
  

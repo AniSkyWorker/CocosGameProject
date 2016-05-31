@@ -5,13 +5,13 @@
 #include "Player.h"
 #include "BlockData.h"
 
-class Area : public Sprite
+class Area : public cocos2d::Sprite
 {	
 public:
 	Area();
 	virtual ~Area();
 	
-    static Area* create();
+    static Area* Create();
 	void ActivateChimneys(Player* player);
     void СheckCollision(Player* player);
 	

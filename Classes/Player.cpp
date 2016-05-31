@@ -1,9 +1,18 @@
 ﻿#include "Player.h"
 #include "SimpleAudioEngine.h"
 
+USING_NS_CC;
+
 namespace
 {
-	const double c_acceleraton = 0.05;
+	const float c_acceleraton = 0.05f;
+	const float c_velocity = 8.f;
+	const float c_jump = 40.f;
+	const float c_gravityForce = 1.5f;
+	const float c_floatingForce = 0.4f;
+	const float с_terminalVelocity = 70.f;
+	const float c_floatingFriction = 0.96f;
+	const float c_airFriction = 0.99f;
 }
 using namespace CocosDenshion;
 
@@ -18,25 +27,19 @@ Player::Player()
     m_screenSize = Director::getInstance()->getWinSize();
 	m_floatingTimerMax = 2;
 	m_floatingTimer = 0;
-    m_speed = PLAYER_INITIAL_SPEED;
-    m_maxSpeed = PLAYER_INITIAL_SPEED;
-    m_floating = false;
-    m_nextPosition = Vec2(0,0);
-	m_nextPosition.y = m_screenSize.height * 0.6f;
-	m_gameState = PlayerState::PlayerMoving;
-    m_jumping = false;
-    m_hasFloated = false;
+	Reset();
 }
 
-Player * Player::create()
+Player * Player::Create()
 {
     auto player = new Player();
     
     if (player && player->initWithSpriteFrameName("player_1.png"))
 	{
 		player->autorelease();
-        player->setSize();
-        player->initPlayer();
+		player->setWidth(player->getBoundingBox().size.width);
+		player->setHeight(player->getBoundingBox().size.height);
+        player->InitPlayer();
         return player;
 	}
     
@@ -53,7 +56,7 @@ void Player::update(float dt)
 	switch (m_gameState)
 	{
 	case PlayerState::PlayerMoving:
-		m_velocityVec.y -= G_FORCE;
+		m_velocityVec.y -= c_gravityForce;
 		if (m_hasFloated)
 		{
 			m_hasFloated = false;
@@ -63,19 +66,18 @@ void Player::update(float dt)
 	case PlayerState::PlayerFalling:
 		if (m_floating)
 		{
-			m_velocityVec.y -= FLOATNG_GRAVITY;
-			m_velocityVec.x *= FLOATING_FRICTION;
-			
+			m_velocityVec.y -= c_floatingForce;
+			m_velocityVec.x *= c_floatingFriction;
 		}
 		else
 		{
-			m_velocityVec.y -= G_FORCE;
-			m_velocityVec.x *= AIR_FRICTION;
+			m_velocityVec.y -= c_gravityForce;
+			m_velocityVec.x *= c_airFriction;
 			m_floatingTimer = 0;
 		}
 		break;
 	case PlayerState::PlayerDying:
-        m_velocityVec.y -= G_FORCE;
+        m_velocityVec.y -= c_gravityForce;
         m_velocityVec.x = -m_speed;
         setPositionX(getPositionX() + m_velocityVec.x);
         break;
@@ -84,19 +86,19 @@ void Player::update(float dt)
     if (m_jumping)
 	{
         m_gameState = PlayerState::PlayerFalling;
-        m_velocityVec.y += PLAYER_JUMP * 0.25f;
-		if (m_velocityVec.y > PLAYER_JUMP)
+        m_velocityVec.y += c_jump * 0.25f;
+		if (m_velocityVec.y > c_jump)
 		{
 			m_jumping = false;
 		}
     }
     
-	if (m_velocityVec.y < -TERMINAL_VELOCITY)
+	if (m_velocityVec.y < -с_terminalVelocity)
 	{
-		m_velocityVec.y = -TERMINAL_VELOCITY;
+		m_velocityVec.y = -с_terminalVelocity;
 	}
     
-  	m_nextPosition.y = getPositionY() + m_velocityVec.y;
+  	m_expectedPosition.y = getPositionY() + m_velocityVec.y;
     
         
 	if (pow(m_velocityVec.x, 2) < 0.01)
@@ -115,27 +117,83 @@ void Player::update(float dt)
 		{
             m_floatingTimer = 0;
             SimpleAudioEngine::getInstance()->playEffect("falling.wav");
-			setFloating(false);
+			SetFloating(false);
 		}
 	}
 }
 
 void Player::Reset() 
 {
-    m_speed = PLAYER_INITIAL_SPEED;
-    m_maxSpeed = PLAYER_INITIAL_SPEED;
-    
+    m_speed = c_velocity;
+    m_maxSpeed = c_velocity;
     m_velocityVec = Vec2(0,0);
-    this->setFloating(false);
-    this->setRotation(0);
-    m_nextPosition.y = m_screenSize.height * 0.6f;
-    this->setPosition(Vec2( m_screenSize.width * 0.2f, m_nextPosition.y ));
+
+	SetFloating(false);
+    setRotation(0);
+
+    m_expectedPosition.y = m_screenSize.height * 0.6f;
+    setPosition(Vec2( m_screenSize.width * 0.2f, m_expectedPosition.y));
+
     m_gameState = PlayerState::PlayerMoving;
+
     m_jumping = false;
     m_hasFloated = false;
 }
 
-void Player::setFloating(bool value)
+void Player::Move()
+{
+	setPositionY(m_expectedPosition.y);
+	if (m_velocityVec.x > 0 && _position.x < m_screenSize.width * 0.2f)
+	{
+		setPositionX(_position.x + m_velocityVec.x);
+		if (_position.x > m_screenSize.width * 0.2f)
+		{
+			setPositionX(m_screenSize.width * 0.2f);
+		}
+	}
+}
+
+int Player::GetLeft() const
+{
+	return _position.x - m_width * 0.5f;
+}
+
+int Player::GetRight() const
+{
+	return _position.x + m_width * 0.5f;
+}
+
+int Player::GetTop() const
+{
+	return _position.y;
+}
+
+int Player::GetBottom() const
+{
+	return _position.y - m_height;
+}
+
+int Player::GetExpectedLeft() const
+{
+	return m_expectedPosition.x - m_width * 0.5f;
+}
+
+int Player::GetExpectedRight() const
+{
+	return m_expectedPosition.x + m_width * 0.5f;
+}
+
+int Player::GetExpectedTop() const
+{
+	return m_expectedPosition.y;
+}
+
+int Player::GetExpectedBottom() const
+{
+	return m_expectedPosition.y - m_height;
+}
+
+void Player::SetFloating(bool value)
 {
 	if (m_floating == value || (value && m_hasFloated))
 	{
@@ -152,7 +210,7 @@ void Player::setFloating(bool value)
         SimpleAudioEngine::getInstance()->playEffect("openUmbrella.wav");
         setSpriteFrame(SpriteFrameCache::getInstance()->getSpriteFrameByName("player_float.png"));
         runAction(m_floatAnimation);
-        m_velocityVec.y += PLAYER_JUMP * 0.5f;
+        m_velocityVec.y += c_jump * 0.5f;
     } 
 	else
 	{
@@ -160,10 +218,10 @@ void Player::setFloating(bool value)
     }
 }
 
-void Player::initPlayer()
+void Player::InitPlayer()
 {
     setAnchorPoint(Vec2(0.5f, 1.0f));
-    setPosition(Vec2(m_screenSize.width * 0.2f, m_nextPosition.y));
+    setPosition(Vec2(m_screenSize.width * 0.2f, m_expectedPosition.y));
     m_height = 252 * 0.95f;
     m_width = 184;
     
