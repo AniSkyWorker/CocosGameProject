@@ -67,17 +67,18 @@ void Area::InitTerrain()
 	AddBlocks(0);
 }
 
-
-void Area::activateChimneysAt(Player * player)
+void Area::ActivateChimneys(Player* player)
 {
     for (int i = 0; i < m_currentArea.size(); i++) 
 	{
         auto block = m_currentArea.at(i);
-        if (block->getType() == BlockType::Empty) continue;
-        if (block->getPuffing()) continue;
+		if (block->getType() == BlockType::Empty || block->getPuffing())
+		{
+			continue;
+		}
                 
-        if ( this->getPositionX() + block->getPositionX() >= m_screenSize.width * 0.2f &&
-            this->getPositionX() + block->getPositionX() < m_screenSize.width * 0.8f)
+		if (_position.x + block->getPositionX() >= m_screenSize.width * 0.2f &&
+			_position.x + block->getPositionX() < m_screenSize.width * 0.8f)
 		{
             block->SetPuffing(true);
         }
@@ -235,10 +236,10 @@ void Area::SetBlocksPositions()
 	current = m_currentArea.at(0);
 	current->setPositionX(0);
 
-	for (size_t i = 1; i < m_currentArea.size(); i++)
+	for (ssize_t i = 1; i < m_currentArea.size(); i++)
 	{
 		current =  m_currentArea.at(i);
-		prev = m_currentArea.at(i - 1);
+		prev = m_currentArea.at(i- 1);
 		current->setPositionX(prev->getPositionX() + prev->getWidth());
 	}
 }

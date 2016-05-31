@@ -150,7 +150,7 @@ void Player::setFloating(bool value)
 	{
         m_hasFloated = true;
         SimpleAudioEngine::getInstance()->playEffect("openUmbrella.wav");
-        setDisplayFrame(SpriteFrameCache::getInstance()->getSpriteFrameByName("player_float.png"));
+        setSpriteFrame(SpriteFrameCache::getInstance()->getSpriteFrameByName("player_float.png"));
         runAction(m_floatAnimation);
         m_velocityVec.y += PLAYER_JUMP * 0.5f;
     } 

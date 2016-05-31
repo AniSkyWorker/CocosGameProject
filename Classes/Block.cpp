@@ -140,10 +140,10 @@ void Block::SetupBlock(int width, int height, BlockType type)
     }
     
 	
-    for (int i = 0; i < m_chimneys.size(); i++) 
+    for (ssize_t i = 0; i < m_chimneys.size(); i++) 
 	{
     	auto chimney = m_chimneys.at(i);
-        if (i < chimneys.size())
+        if (static_cast<size_t>(i) < chimneys.size())
 		{
             chimney->setPosition(Vec2(chimneys[i] * m_width, 0));
             chimney->setVisible(true);
@@ -223,10 +223,10 @@ void Block::InitBlock()
         
         for (int j = 0; j < c_steamCount; j++)
 		{
-            auto puff = Sprite::createWithSpriteFrameName("puff_1.png");
-            puff->setAnchorPoint(Vec2(0,-0.5));
-            puff->setVisible(false);
-            chimney->addChild(puff, -1, j);
+            auto steam = Sprite::createWithSpriteFrameName("puff_1.png");
+			steam->setAnchorPoint(Vec2(0,-0.5));
+			steam->setVisible(false);
+            chimney->addChild(steam, -1, j);
         }
         
     }

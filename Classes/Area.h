@@ -12,7 +12,7 @@ public:
 	virtual ~Area();
 	
     static Area* create();
-	void activateChimneysAt(Player* player);
+	void ActivateChimneys(Player* player);
     void СheckCollision(Player* player);
 	
 	void Move(float xMove);
