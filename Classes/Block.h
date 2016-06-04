@@ -36,6 +36,7 @@ public:
 
 	CC_SYNTHESIZE(BlockType, m_type, Type);
 	CC_SYNTHESIZE_READONLY(bool, m_puffing, Puffing);
+	CC_SYNTHESIZE_READONLY(cocos2d::Vector<Sprite*>, m_chimneys, Chimneys);
 
 private:
 	void InitBlock();
@@ -45,7 +46,6 @@ private:
 
 	cocos2d::Vector<Sprite*> m_wallTiles;
 	cocos2d::Vector<Sprite*> m_roofTiles;
-	cocos2d::Vector<Sprite*> m_chimneys;
 
 	cocos2d::SpriteFrame * m_tile1;
 	cocos2d::SpriteFrame * m_tile2;

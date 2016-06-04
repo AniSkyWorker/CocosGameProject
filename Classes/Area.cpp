@@ -1,5 +1,6 @@
 ﻿#include "Area.h"
 #include "SimpleAudioEngine.h"
+#include <algorithm>
 
 using namespace CocosDenshion;
 USING_NS_CC;
@@ -69,6 +70,7 @@ void Area::InitTerrain()
 
 void Area::ActivateChimneys(Player* player)
 {
+	m_chimneysPos.clear();
     for (int i = 0; i < m_currentArea.size(); i++) 
 	{
         auto block = m_currentArea.at(i);
@@ -81,6 +83,26 @@ void Area::ActivateChimneys(Player* player)
 			_position.x + block->getPositionX() < m_screenSize.width * 0.8f)
 		{
             block->SetPuffing(true);
+			auto chimneyPos = block->getChimneys();
+			for (auto const & chimney : chimneyPos)
+			{
+				auto pos = chimney->getPosition();
+				if (pos != Vec2(0.f, 0.f))
+				{
+					auto it = std::find_if(m_chimneysPos.begin(), m_chimneysPos.end(), [&](const auto position)
+					{
+						return position == pos;
+					});
+					if (it == m_chimneysPos.end())
+					{
+						m_chimneysPos.push_back(block->convertToWorldSpace(pos));
+					}
+					else
+					{
+						auto i = 1;
+					}
+				}
+			}
         }
     }
 }

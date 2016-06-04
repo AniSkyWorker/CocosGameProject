@@ -13,12 +13,14 @@ public:
 	
     static Area* Create();
 	void ActivateChimneys(Player* player);
+	
     void СheckCollision(Player* player);
 	
 	void Move(float xMove);
     void Reset();
 
 	CC_SYNTHESIZE(bool, m_startGame, StartGame);
+	CC_SYNTHESIZE(std::vector<cocos2d::Point>, m_chimneysPos, ChimneysPosition);
 
 private:
 	void InitTerrain();

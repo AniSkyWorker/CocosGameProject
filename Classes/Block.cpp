@@ -50,7 +50,7 @@ Block* Block::Create()
 void Block::SetPuffing(bool value) 
 {
     m_puffing = value;
-    
+
     if (value) 
 	{
         runAction(m_steamSpawn->clone());
@@ -77,6 +77,7 @@ void Block::HidePuffs()
     SetPuffing(false);
 }
 
+
 int Block::GetLeft() const
 {
 	return _position.x;
@@ -95,7 +96,6 @@ int Block::GetTop() const
 void Block::SetupBlock(int width, int height, BlockType type)
 {
     SetPuffing(false);
- 
     m_type = type;
     m_width = width * m_tileWidth;
     m_height = m_tileHeight * (height + 0.5f);
@@ -153,7 +153,7 @@ void Block::SetupBlock(int width, int height, BlockType type)
             chimney->setVisible(false);
         }
     }
-    
+	auto c = rand() % chimneys.size();
 	setVisible(true);
     
     for (auto tile : m_roofTiles)
@@ -190,8 +190,8 @@ void Block::InitBlock()
     m_tile3 = SpriteFrameCache::getInstance()->getSpriteFrameByName("building_3.png");
     m_tile4 = SpriteFrameCache::getInstance()->getSpriteFrameByName("building_4.png");
     
-    m_roof1 = SpriteFrameCache::getInstance()->getSpriteFrameByName ("roof_1.png");
-    m_roof2 = SpriteFrameCache::getInstance()->getSpriteFrameByName ("roof_2.png");
+    m_roof1 = SpriteFrameCache::getInstance()->getSpriteFrameByName("roof_1.png");
+    m_roof2 = SpriteFrameCache::getInstance()->getSpriteFrameByName("roof_2.png");
     
     for (int i = 0; i < 5; i++) 
 	{

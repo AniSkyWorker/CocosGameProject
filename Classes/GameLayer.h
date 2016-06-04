@@ -52,7 +52,8 @@ private:
 
 	void UpdateScore(float dt);
 	void IncreaseComplexity(float dt);
-
+	void PushCat();
+	void SetCatInvisible();
 	void UpdateTutorial();
 
 	void SwitchDay();
@@ -68,8 +69,11 @@ private:
 	cocos2d::Sprite* m_foreground;
 	cocos2d::Sprite* m_playerHat;
 	cocos2d::Sprite* m_cyclists;
+	cocos2d::Sprite* m_cat;
 	cocos2d::Action* m_cyclistsAnimation;
 	cocos2d::Action* m_cyclistsMoving;
+	cocos2d::Action* m_catRush;
+
 
 	cocos2d::Sprite* m_daySprite;
 	cocos2d::Sprite* m_nightSprite;
@@ -85,6 +89,7 @@ private:
 	GameState m_gameState;
 
 	bool m_isRunning;
+	bool m_isCatFly;
 	float m_score;
 	int m_speedIncreaseInterval;
 	float m_speedIncreaseTimer;

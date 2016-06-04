@@ -33,6 +33,7 @@ bool GameLayer::init()
     }
     
     m_screenSize = Director::getInstance()->getWinSize();
+
     CreateGameScreen();
     
     ResetGame();
@@ -131,9 +132,7 @@ void GameLayer::UpdateParallax()
 		{
 			cloud->setPositionX(m_screenSize.width + cloud->getBoundingBox().size.width * 0.5f);
 		}
-		
 	}
-	
 }
 
 void GameLayer::UpdateÑyclists()
@@ -159,6 +158,30 @@ void GameLayer::IncreaseComplexity(float dt)
 		m_speedIncreaseTimer = 0;
 		m_player->setMaxSpeed(m_player->getMaxSpeed() + 5);
 	}
+}
+
+void GameLayer::PushCat()
+{
+	int chance = rand() % 101;
+	if (chance > 70)
+	{
+		auto chimsPos = m_area->getChimneysPosition();
+		if (!chimsPos.empty())
+		{	
+			size_t randChim = rand() % chimsPos.size();
+			m_cat->setVisible(true);
+			m_cat->setPosition(chimsPos.at(randChim));
+			m_cat->runAction(m_catRush);
+			SimpleAudioEngine::getInstance()->playEffect("cat.wav");
+			m_isCatFly = true;
+		}
+	}
+}
+
+void GameLayer::SetCatInvisible()
+{
+	m_cat->setVisible(false);
+	m_isCatFly = false;
 }
 
 void GameLayer::UpdateTutorial()
@@ -228,6 +251,22 @@ void GameLayer::update(float dt)
 	if (m_player->getState() != PlayerState::PlayerDying) 
 	{
 		m_area->ÑheckCollision(m_player); 
+		if (m_isCatFly)
+		{
+			if (m_player->boundingBox().intersectsRect(m_cat->getBoundingBox()))
+			{
+				if (!m_player->getFloating())
+				{
+					m_player->setState(PlayerState::PlayerDying);
+				}
+				else
+				{
+					m_cat->stopAllActions();
+					m_cat->runAction(RotateBy::create(2.0f, 720.f));
+					m_cat->runAction(m_catRush);
+				}
+			}
+		}
 	}
 
 	UpdateSpritesPlacement();
@@ -252,7 +291,10 @@ void GameLayer::update(float dt)
 	{
 		UpdateTutorial();
 	}
-
+	if (m_isCatFly)
+	{
+		m_cat->setPositionX(m_cat->getPosition().x - m_player->getVelocity().x);
+	}
 	m_daySwitchTimer += dt;
 	if (m_daySwitchTimer >= c_timeToSwitchDay)
 	{
@@ -297,6 +339,10 @@ bool GameLayer::OnTouchBegan(Touch * touch, Event* event)
                     }
                 } 
                 m_area->ActivateChimneys(m_player);
+				if (!m_isCatFly)
+				{
+					PushCat();
+				}
                 break;
             case GameState::Tutorial:
                 m_tutorialLabel->setString("");
@@ -315,7 +361,7 @@ bool GameLayer::OnTouchBegan(Touch * touch, Event* event)
                 if (!m_player->getFloating())
 				{
 					m_cyclists->runAction(m_cyclistsMoving);
-                    m_player->SetFloating (true);
+                    m_player->SetFloating(true);
                     m_isRunning = true;
                 }
                 break;
@@ -465,6 +511,13 @@ void GameLayer::CreateGameObjects()
 	m_cyclists->setPosition(Vec2(m_screenSize.width * 0.19f, m_screenSize.height * 0.47f));
 	m_cyclistsMoving = MoveTo::create(3.0f, Vec2(m_screenSize.width * 1.5f, m_cyclists->getPositionY()));
 	m_cyclistsMoving->retain();
+
+	m_cat = Sprite::create("cat2.png");
+	addChild(m_cat, LayerType::Middle);
+	m_catRush = Sequence::create(JumpBy::create(2.0f, Vec2(0, 10), m_screenSize.height * 0.4f, 1)
+		, CallFunc::create(std::bind(&GameLayer::SetCatInvisible, this)), nullptr);
+	m_catRush->retain();
+	m_cat->setVisible(false);
 }
 
 void GameLayer::CreateMenu()
