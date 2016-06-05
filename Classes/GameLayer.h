@@ -8,30 +8,28 @@
 
 enum class GameState 
 {
-    Intro,
-    Play,
-    Over,
+	Intro,
+	Play,
+	Over,
 	Tutorial,
 	TutorialJump,
-    TutorialFloat,
-    TutorialDrop
+	TutorialFloat,
+	TutorialDrop
 };
 
 class GameLayer : public cocos2d::Layer
 {
 public:
-    virtual ~GameLayer();
-    virtual bool init() override;
-    static cocos2d::Scene* scene();
-    
-    CREATE_FUNC(GameLayer);
-    void update(float dt);
-    
+	virtual ~GameLayer();
+	virtual bool init() override;
+	static cocos2d::Scene* scene();
+	CREATE_FUNC(GameLayer);
+	void update(float dt);
+
 	bool OnTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
-    void OnTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event);
-    
-    void ShowTutorial(cocos2d::Ref* pSender);
-    void StartGame(cocos2d::Ref* pSender);
+	void OnTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event);
+	void ShowTutorial(cocos2d::Ref* pSender);
+	void StartGame(cocos2d::Ref* pSender);
 
 private:
 	void CreateGameScreen();
@@ -45,14 +43,23 @@ private:
 	void ResetGame();
 	void GameOver();
 
+	void CheckCollisions();
+
 	void UpdateSpritesPlacement();
 
 	void UpdateParallax();
-	void Update—yclists();
+	void UpdateCyclists();
 
 	void UpdateScore(float dt);
 	void IncreaseComplexity(float dt);
+
 	void PushCat();
+	void PushCatAtPosition(const cocos2d::Vec2 & position);
+
+	void PushSweeper();
+	void PushSweeperAtPosition(const cocos2d::Vec2 & position);
+
+	void SetSweeperInvisible();
 	void SetCatInvisible();
 	void UpdateTutorial();
 
@@ -63,17 +70,18 @@ private:
 
 	cocos2d::Label* m_scoreDisplay;
 
-	cocos2d::Sprite* m_introSprite;
+	cocos2d::Label* m_introLabel;
 	cocos2d::Sprite* m_tryAgainLabel;
 	cocos2d::Sprite* m_background;
 	cocos2d::Sprite* m_foreground;
 	cocos2d::Sprite* m_playerHat;
 	cocos2d::Sprite* m_cyclists;
 	cocos2d::Sprite* m_cat;
+	cocos2d::Sprite* m_sweeper;
+	cocos2d::Action* m_sweeperPush;
 	cocos2d::Action* m_cyclistsAnimation;
 	cocos2d::Action* m_cyclistsMoving;
 	cocos2d::Action* m_catRush;
-
 
 	cocos2d::Sprite* m_daySprite;
 	cocos2d::Sprite* m_nightSprite;
@@ -90,10 +98,13 @@ private:
 
 	bool m_isRunning;
 	bool m_isCatFly;
+	bool m_isSweeperCome;
 	float m_score;
 	int m_speedIncreaseInterval;
 	float m_speedIncreaseTimer;
+	float m_sweeperPosition;
 	float m_daySwitchTimer;
+	float m_sweepTimer;
 };
 
 

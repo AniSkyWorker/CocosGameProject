@@ -15,7 +15,6 @@ GameLayer::~GameLayer()
     CC_SAFE_RELEASE(m_cyclistsAnimation);
 }
 
-
 Scene* GameLayer::scene()
 {
     auto scene = Scene::create();
@@ -53,14 +52,13 @@ void GameLayer::ResetGame()
 	m_daySwitchTimer = 0;
 	m_daySprite->setVisible(true);
 	m_nightSprite->setVisible(false);
-
     m_scoreDisplay->setString(String::createWithFormat("%i", (int)m_score)->getCString());
     m_scoreDisplay->setAnchorPoint(Vec2(1,0));
     m_scoreDisplay->setPosition(Vec2(m_screenSize.width * 0.95f, m_screenSize.height * 0.88f));
-    
+	m_scoreDisplay->setVisible(false);
     m_gameState = GameState::Intro;
     
-    m_introSprite->setVisible(true);
+    m_introLabel->setVisible(true);
     m_mainMenu->setVisible(true);
     
     m_cyclists->setPosition(Vec2(m_screenSize.width * 0.19f, m_screenSize.height * 0.47f));
@@ -68,7 +66,7 @@ void GameLayer::ResetGame()
     m_cyclists->runAction(m_cyclistsAnimation);
     
     SimpleAudioEngine::getInstance()->stopBackgroundMusic();
-    SimpleAudioEngine::getInstance()->playBackgroundMusic("1.mp3", true);
+    SimpleAudioEngine::getInstance()->playBackgroundMusic("background3.mp3", true);
     m_isRunning = true;
 }
 
@@ -76,7 +74,8 @@ void GameLayer::GameOver()
 {
 	m_isRunning = false;
 	m_gameState = GameState::Over;
-
+	SetCatInvisible();
+	SetSweeperInvisible();
 	m_tryAgainLabel->setVisible(true);
 	m_scoreDisplay->setAnchorPoint(Vec2(0.5f, 0.5f));
 	m_scoreDisplay->setPosition(Vec2(m_screenSize.width * 0.5f, m_screenSize.height * 0.8f));
@@ -90,17 +89,68 @@ void GameLayer::GameOver()
 	SimpleAudioEngine::getInstance()->playEffect("crashing.wav");
 }
 
+void GameLayer::CheckCollisions()
+{
+	m_area->CheckCollision(m_player);
+	if (m_isCatFly)
+	{
+		if (m_player->getBoundingBox().intersectsRect(m_cat->getBoundingBox()))
+		{
+			if (!m_player->getFloating())
+			{
+				m_player->setState(PlayerState::PlayerDying);
+			}
+			else
+			{
+				m_cat->stopAllActions();
+				m_cat->runAction(RotateBy::create(2.0f, 720.f));
+				m_cat->runAction(m_catRush);
+			}
+		}
+	}
+	if (m_isSweeperCome)
+	{
+		if (m_player->getBoundingBox().intersectsRect(m_sweeper->getBoundingBox()))
+		{
+			m_player->setState(PlayerState::PlayerDying);
+			m_sweeper->stopAllActions();
+			m_sweeper->runAction(JumpBy::create(1.f, Vec2(0, 10), 50, 3));
+			SetSweeperInvisible();
+		}
+	}
+}
+
 void GameLayer::UpdateSpritesPlacement()
 {
 	m_player->Move();
-
+	if (m_isSweeperCome)
+	{
+		m_sweeper->setPositionX(m_sweeper->getPositionX() - m_player->getVelocity().x);
+		if (m_sweepTimer > 0.5f)
+		{
+			m_sweeper->setPositionY(m_sweeperPosition);
+		}
+	}
 	if (m_player->getExpectedPosition().y > m_screenSize.height * 0.6f)
 	{
 		m_mainBatchNode->setPositionY((m_screenSize.height * 0.6f - m_player->getExpectedPosition().y) * 0.8f);
+		if (m_isSweeperCome && m_sweepTimer > 0.5f)
+		{
+			m_sweeper->setPositionY(m_sweeperPosition + m_mainBatchNode->getPositionY());
+		}
 	}
 	else
 	{
 		m_mainBatchNode->setPositionY(0);
+	}
+
+	if (m_isCatFly)
+	{
+		m_cat->setPositionX(m_cat->getPositionX() - m_player->getVelocity().x);
+		if (m_cat->getPosition().y < m_screenSize.height * 0.2)
+		{
+			SetCatInvisible();
+		}
 	}
 }
 
@@ -135,7 +185,7 @@ void GameLayer::UpdateParallax()
 	}
 }
 
-void GameLayer::UpdateÑyclists()
+void GameLayer::UpdateCyclists()
 {
 	if (m_cyclists->getPositionX() - m_player->getPosition().x > m_screenSize.width * 1.1f)
 	{
@@ -162,26 +212,62 @@ void GameLayer::IncreaseComplexity(float dt)
 
 void GameLayer::PushCat()
 {
-	int chance = rand() % 101;
-	if (chance > 70)
+	int chance = cocos2d::RandomHelper::random_int(0, 100);
+	if (chance > 80)
 	{
-		auto chimsPos = m_area->getChimneysPosition();
+		auto chimsPos = m_area->GetChimneysPos();
 		if (!chimsPos.empty())
 		{	
-			size_t randChim = rand() % chimsPos.size();
-			m_cat->setVisible(true);
-			m_cat->setPosition(chimsPos.at(randChim));
-			m_cat->runAction(m_catRush);
+			int randChim = cocos2d::RandomHelper::random_int(0, static_cast<int>(chimsPos.size() - 1));
+			PushCatAtPosition(chimsPos.at(randChim));
 			SimpleAudioEngine::getInstance()->playEffect("cat.wav");
 			m_isCatFly = true;
 		}
 	}
 }
 
+void GameLayer::PushCatAtPosition(const cocos2d::Vec2 & position)
+{
+	m_cat->setVisible(true);
+	m_cat->setPosition(position);
+	m_cat->runAction(m_catRush);
+}
+
+void GameLayer::PushSweeper()
+{
+	int chance = cocos2d::RandomHelper::random_int(0, 100);
+	if (chance > 80)
+	{
+		auto chimsPos = m_area->GetChimneysPos();
+		if (!chimsPos.empty())
+		{
+			int randChim = cocos2d::RandomHelper::random_int(0, static_cast<int>(chimsPos.size() - 1));
+			PushSweeperAtPosition(chimsPos.at(randChim));
+			m_sweepTimer = 0;
+			SimpleAudioEngine::getInstance()->playEffect("sneeze.wav");
+			m_isSweeperCome = true;
+		}
+	}
+}
+
+void GameLayer::PushSweeperAtPosition(const cocos2d::Vec2 & position)
+{
+	m_sweeper->setVisible(true);
+	m_sweeperPosition = position.y + m_sweeper->getBoundingBox().size.height / 2.f;
+	m_sweeper->setPosition(position.x, m_sweeperPosition);
+	m_sweeper->runAction(m_sweeperPush);
+}
+
 void GameLayer::SetCatInvisible()
 {
 	m_cat->setVisible(false);
 	m_isCatFly = false;
+}
+
+void GameLayer::SetSweeperInvisible()
+{
+	m_sweeper->setVisible(false);
+	m_isSweeperCome = false;
 }
 
 void GameLayer::UpdateTutorial()
@@ -250,27 +336,10 @@ void GameLayer::update(float dt)
    
 	if (m_player->getState() != PlayerState::PlayerDying) 
 	{
-		m_area->ÑheckCollision(m_player); 
-		if (m_isCatFly)
-		{
-			if (m_player->boundingBox().intersectsRect(m_cat->getBoundingBox()))
-			{
-				if (!m_player->getFloating())
-				{
-					m_player->setState(PlayerState::PlayerDying);
-				}
-				else
-				{
-					m_cat->stopAllActions();
-					m_cat->runAction(RotateBy::create(2.0f, 720.f));
-					m_cat->runAction(m_catRush);
-				}
-			}
-		}
+		CheckCollisions();
+		
 	}
-
 	UpdateSpritesPlacement();
-
     if (m_player->getVelocity().x > 0)
 	{
 		UpdateParallax();
@@ -284,18 +353,19 @@ void GameLayer::update(float dt)
 
     if (m_cyclists->isVisible())
 	{
-		UpdateÑyclists();
+		UpdateCyclists();
     }
 
 	if (m_gameState > GameState::Tutorial)
 	{
 		UpdateTutorial();
 	}
-	if (m_isCatFly)
-	{
-		m_cat->setPositionX(m_cat->getPosition().x - m_player->getVelocity().x);
-	}
+
 	m_daySwitchTimer += dt;
+	if (m_isSweeperCome)
+	{
+		m_sweepTimer += dt;
+	}
 	if (m_daySwitchTimer >= c_timeToSwitchDay)
 	{
 		m_daySwitchTimer = 0;
@@ -339,9 +409,13 @@ bool GameLayer::OnTouchBegan(Touch * touch, Event* event)
                     }
                 } 
                 m_area->ActivateChimneys(m_player);
-				if (!m_isCatFly)
+				if (cocos2d::RandomHelper::random_int(0, 1) == 1 && !m_isCatFly)
 				{
 					PushCat();
+				}
+				else if(!m_isSweeperCome)
+				{
+					PushSweeper();
 				}
                 break;
             case GameState::Tutorial:
@@ -391,7 +465,7 @@ void GameLayer::ShowTutorial(Ref* pSender)
 
     m_cyclists->runAction(m_cyclistsMoving);
 
-    m_introSprite->setVisible(false);
+	m_introLabel->setVisible(false);
     m_mainMenu->setVisible(false);
 
     SimpleAudioEngine::getInstance()->playEffect("start.wav");
@@ -402,8 +476,9 @@ void GameLayer::ShowTutorial(Ref* pSender)
 void GameLayer::StartGame(Ref* pSender)
 {
     m_tutorialLabel->setVisible(false);
-    m_introSprite->setVisible(false);
+	m_introLabel->setVisible(false);
     m_mainMenu->setVisible(false);
+	m_scoreDisplay->setVisible(true);
     
     m_cyclists->runAction(m_cyclistsMoving);
 
@@ -450,7 +525,7 @@ void GameLayer::CreateFilling()
 
 	m_foreground = Sprite::createWithSpriteFrameName("lamp.png");
 	m_foreground->setAnchorPoint(Vec2(0, 0));
-	m_mainBatchNode->addChild(m_foreground, LayerType::Front);
+	m_mainBatchNode->addChild(m_foreground, LayerType::Front + 1);
 
 	repeat = Sprite::createWithSpriteFrameName("lamp.png");
 	repeat->setAnchorPoint(Vec2(0, 0));
@@ -465,32 +540,37 @@ void GameLayer::CreateFilling()
 	float cloud_y;
 	for (int i = 0; i < 4; i++)
 	{
-		cloud_y = i % 2 == 0 ? m_screenSize.height * 0.7f : m_screenSize.height * 0.8f;
+		cloud_y = i % 2 == 0 ? m_screenSize.height * 0.8f : m_screenSize.height * 0.9f;
 		auto cloud = Sprite::createWithSpriteFrameName("cloud.png");
 		cloud->setPosition(Vec2(m_screenSize.width * 0.15f + i * m_screenSize.width * 0.25f, cloud_y));
 		m_mainBatchNode->addChild(cloud, LayerType::Back);
 		m_clouds.pushBack(cloud);
 	}
 
-	m_introSprite = Sprite::createWithSpriteFrameName("logo.png");
-	m_introSprite->setPosition(Vec2(m_screenSize.width * 0.5f, m_screenSize.height * 0.7f));
-	m_mainBatchNode->addChild(m_introSprite, LayerType::Front);
-
 	m_tryAgainLabel = Sprite::createWithSpriteFrameName("label_tryagain.png");
 	m_tryAgainLabel->setPosition(Vec2(m_screenSize.width * 0.5f, m_screenSize.height * 0.7f));
 	m_tryAgainLabel->setVisible(false);
 	addChild(m_tryAgainLabel, LayerType::Front);
 
+
 	m_tutorialLabel = Label::createWithTTF("", "fonts/Times.ttf", 60);
 	m_tutorialLabel->setPosition(Vec2(m_screenSize.width * 0.5f, m_screenSize.height * 0.6f));
 	addChild(m_tutorialLabel, LayerType::Front);
 	m_tutorialLabel->setVisible(false);
+
+	cocos2d::TTFConfig config;
+	config.fontSize = 200;
+	config.fontFilePath = "fonts/Demo.ttf";
+	m_introLabel = Label::createWithTTF(config, "AniSkyWorker`s: Rain Dogs", TextHAlignment::CENTER);
+	m_introLabel->setPosition(Vec2(m_screenSize.width * 0.5f, m_screenSize.height * 0.7f));
+	m_introLabel->setTextColor(cocos2d::Color4B::BLACK);
+	addChild(m_introLabel, LayerType::Front);
 }
 
 void GameLayer::CreateGameObjects()
 {
 	m_area = Area::Create();
-	m_mainBatchNode->addChild(m_area, LayerType::Middle);
+	m_mainBatchNode->addChild(m_area, LayerType::Front);
 
 	m_player = Player::Create();
 	m_mainBatchNode->addChild(m_player, LayerType::Back);
@@ -518,6 +598,12 @@ void GameLayer::CreateGameObjects()
 		, CallFunc::create(std::bind(&GameLayer::SetCatInvisible, this)), nullptr);
 	m_catRush->retain();
 	m_cat->setVisible(false);
+
+	m_sweeper = Sprite::create("sweeper.png");
+	addChild(m_sweeper, LayerType::Middle);
+	m_sweeperPush = Sequence::create(JumpBy::create(0.5f, Vec2(0,10), 10, 3), DelayTime::create(5.f), CallFunc::create(std::bind(&GameLayer::SetSweeperInvisible, this)), nullptr);
+	m_sweeperPush->retain();
+	m_sweeper->setVisible(false);
 }
 
 void GameLayer::CreateMenu()

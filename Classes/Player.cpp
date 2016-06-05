@@ -10,7 +10,7 @@ namespace
 	const float c_jump = 40.f;
 	const float c_gravityForce = 1.5f;
 	const float c_floatingForce = 0.4f;
-	const float с_terminalVelocity = 70.f;
+	const float c_terminalVelocity = 70.f;
 	const float c_floatingFriction = 0.96f;
 	const float c_airFriction = 0.99f;
 }
@@ -18,13 +18,13 @@ using namespace CocosDenshion;
 
 Player::~Player()
 {
-	CC_SAFE_RELEASE(m_rideAnimation);
-	CC_SAFE_RELEASE(m_floatAnimation);
+    CC_SAFE_RELEASE(m_rideAnimation);
+    CC_SAFE_RELEASE(m_floatAnimation);
 }
 
 Player::Player()
 {
-	m_screenSize = Director::getInstance()->getWinSize();
+    m_screenSize = Director::getInstance()->getWinSize();
 	m_floatingTimerMax = 2;
 	m_floatingTimer = 0;
 	Reset();
@@ -32,15 +32,15 @@ Player::Player()
 
 Player * Player::Create()
 {
-	auto player = new Player();
-	
-	if (player && player->initWithSpriteFrameName("player_1.png"))
+    auto player = new Player();
+    
+    if (player && player->initWithSpriteFrameName("player_1.png"))
 	{
 		player->autorelease();
 		player->setWidth(player->getBoundingBox().size.width);
 		player->setHeight(player->getBoundingBox().size.height);
-		player->InitPlayer();
-		return player;
+        player->InitPlayer();
+        return player;
 	}
     
 	CC_SAFE_DELETE(player);
@@ -51,7 +51,7 @@ Player * Player::Create()
 void Player::update(float dt)
 {
 	m_speed = m_speed + c_acceleraton <= m_maxSpeed ? m_speed + c_acceleraton : m_speed;
-	m_velocityVec.x = m_speed;
+    m_velocityVec.x = m_speed;
     
 	switch (m_gameState)
 	{
@@ -77,25 +77,25 @@ void Player::update(float dt)
 		}
 		break;
 	case PlayerState::PlayerDying:
-		m_velocityVec.y -= c_gravityForce;
-		m_velocityVec.x = -m_speed;
-		setPositionX(getPositionX() + m_velocityVec.x);
-		break;
+        m_velocityVec.y -= c_gravityForce;
+        m_velocityVec.x = -m_speed;
+        setPositionX(getPositionX() + m_velocityVec.x);
+        break;
 	}
     
     if (m_jumping)
 	{
-		m_gameState = PlayerState::PlayerFalling;
-		m_velocityVec.y += c_jump * 0.25f;
+        m_gameState = PlayerState::PlayerFalling;
+        m_velocityVec.y += c_jump * 0.25f;
 		if (m_velocityVec.y > c_jump)
 		{
 			m_jumping = false;
 		}
-	}
+    }
     
-	if (m_velocityVec.y < -с_terminalVelocity)
+	if (m_velocityVec.y < -c_terminalVelocity)
 	{
-		m_velocityVec.y = -с_terminalVelocity;
+		m_velocityVec.y = -c_terminalVelocity;
 	}
     
   	m_expectedPosition.y = getPositionY() + m_velocityVec.y;
@@ -115,8 +115,8 @@ void Player::update(float dt)
 		m_floatingTimer += dt;
 		if (m_floatingTimer > m_floatingTimerMax)
 		{
-			m_floatingTimer = 0;
-			SimpleAudioEngine::getInstance()->playEffect("falling.wav");
+            m_floatingTimer = 0;
+            SimpleAudioEngine::getInstance()->playEffect("falling.wav");
 			SetFloating(false);
 		}
 	}
@@ -124,20 +124,20 @@ void Player::update(float dt)
 
 void Player::Reset() 
 {
-	m_speed = c_velocity;
-	m_maxSpeed = c_velocity;
-	m_velocityVec = Vec2(0,0);
+    m_speed = c_velocity;
+    m_maxSpeed = c_velocity;
+    m_velocityVec = Vec2(0,0);
 
 	SetFloating(false);
-	setRotation(0);
-	
-	m_expectedPosition.y = m_screenSize.height * 0.6f;
-	setPosition(Vec2( m_screenSize.width * 0.2f, m_expectedPosition.y));
+    setRotation(0);
 
-	m_gameState = PlayerState::PlayerMoving;
+    m_expectedPosition.y = m_screenSize.height * 0.6f;
+    setPosition(Vec2( m_screenSize.width * 0.2f, m_expectedPosition.y));
 
-	m_jumping = false;
-	m_hasFloated = false;
+    m_gameState = PlayerState::PlayerMoving;
+
+    m_jumping = false;
+    m_hasFloated = false;
 }
 
 void Player::Move()
@@ -199,50 +199,52 @@ void Player::SetFloating(bool value)
 	{
 		return;
 	}
-
-	m_floating = value;
-	
-	stopAllActions();
-
-	if (value)
+    
+    m_floating = value;
+    
+    stopAllActions();
+    
+    if (value)
 	{
-		m_hasFloated = true;
-		SimpleAudioEngine::getInstance()->playEffect("openUmbrella.wav");
-		setSpriteFrame(SpriteFrameCache::getInstance()->getSpriteFrameByName("player_float.png"));
-		runAction(m_floatAnimation);
-		m_velocityVec.y += c_jump * 0.5f;
-	} 
+        m_hasFloated = true;
+        SimpleAudioEngine::getInstance()->playEffect("openUmbrella.wav");
+        setSpriteFrame(SpriteFrameCache::getInstance()->getSpriteFrameByName("player_float.png"));
+        runAction(m_floatAnimation);
+        m_velocityVec.y += c_jump * 0.5f;
+    } 
 	else
 	{
-		runAction(m_rideAnimation);
-	}
+        runAction(m_rideAnimation);
+    }
 }
 
 void Player::InitPlayer()
 {
-	setAnchorPoint(Vec2(0.5f, 1.0f));
-	setPosition(Vec2(m_screenSize.width * 0.2f, m_expectedPosition.y));
-	m_height = 252 * 0.95f;
-	m_width = 184;
-
-	Animation* animation;
-	animation = Animation::create();
-	SpriteFrame * frame;
-	for(int i = 1; i <= 3; i++)
+    setAnchorPoint(Vec2(0.5f, 1.0f));
+    setPosition(Vec2(m_screenSize.width * 0.2f, m_expectedPosition.y));
+    m_height = 252 * 0.95f;
+    m_width = 184;
+    
+    Animation* animation;
+    animation = Animation::create();
+    SpriteFrame * frame;
+    for(int i = 1; i <= 3; i++) 
 	{
-		frame = SpriteFrameCache::getInstance()->getSpriteFrameByName(String::createWithFormat("player_%i.png", i)->getCString());
-		animation->addSpriteFrame(frame);
-	}
-
-	animation->setDelayPerUnit(0.2f / 3.0f);
-	animation->setRestoreOriginalFrame(false);
-	animation->setLoops(-1);
-	m_rideAnimation = Animate::create(animation);
+        frame = SpriteFrameCache::getInstance()->getSpriteFrameByName(String::createWithFormat("player_%i.png", i)->getCString());
+        animation->addSpriteFrame(frame);
+    }
+    
+    animation->setDelayPerUnit(0.2f / 3.0f);
+    animation->setRestoreOriginalFrame(false);
+    animation->setLoops(-1);
+    m_rideAnimation = Animate::create(animation);
+    m_rideAnimation->retain();
 	m_rideAnimation->retain();
-
-	auto easeSwing = Sequence::create(EaseInOut::create(RotateTo::create(0.8f, -10), 2), EaseInOut::create(RotateTo::create(0.8f, 10), 2), nullptr);
-	m_floatAnimation = RepeatForever::create((ActionInterval*)easeSwing);
-	m_floatAnimation->retain();
-
-	runAction(m_rideAnimation);
+    
+    
+    auto easeSwing = Sequence::create(EaseInOut::create(RotateTo::create(0.8f, -10), 2), EaseInOut::create(RotateTo::create(0.8f, 10), 2), nullptr);
+    m_floatAnimation = RepeatForever::create((ActionInterval*)easeSwing);
+    m_floatAnimation->retain();
+    
+    runAction(m_rideAnimation);
 }

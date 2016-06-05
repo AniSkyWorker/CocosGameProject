@@ -70,7 +70,6 @@ void Area::InitTerrain()
 
 void Area::ActivateChimneys(Player* player)
 {
-	m_chimneysPos.clear();
     for (int i = 0; i < m_currentArea.size(); i++) 
 	{
         auto block = m_currentArea.at(i);
@@ -83,31 +82,11 @@ void Area::ActivateChimneys(Player* player)
 			_position.x + block->getPositionX() < m_screenSize.width * 0.8f)
 		{
             block->SetPuffing(true);
-			auto chimneyPos = block->getChimneys();
-			for (auto const & chimney : chimneyPos)
-			{
-				auto pos = chimney->getPosition();
-				if (pos != Vec2(0.f, 0.f))
-				{
-					auto it = std::find_if(m_chimneysPos.begin(), m_chimneysPos.end(), [&](const auto position)
-					{
-						return position == pos;
-					});
-					if (it == m_chimneysPos.end())
-					{
-						m_chimneysPos.push_back(block->convertToWorldSpace(pos));
-					}
-					else
-					{
-						auto i = 1;
-					}
-				}
-			}
         }
     }
 }
 
-void Area::СheckCollision(Player* player)
+void Area::CheckCollision(Player* player)
 {
 	if (player->getState() == PlayerState::PlayerDying)
 	{
@@ -233,6 +212,41 @@ void Area::Reset()
 
     m_emptyInterval = 0;
     m_currentEmptySize = 2;
+}
+
+std::vector<cocos2d::Point> Area::GetChimneysPos()
+{
+	std::vector<cocos2d::Point> chimneysPos;
+	for (int i = 0; i < m_currentArea.size(); i++)
+	{
+		auto block = m_currentArea.at(i);
+		if (block->getType() == BlockType::Empty)
+		{
+			continue;
+		}
+
+		if (_position.x + block->getPositionX() >= m_screenSize.width * 0.2f &&
+			_position.x + block->getPositionX() < m_screenSize.width * 0.8f)
+		{
+			auto chimneyPos = block->getChimneys();
+			for (auto const & chimney : chimneyPos)
+			{
+				auto pos = chimney->getPosition();
+				if (pos != Vec2(0.f, 0.f))
+				{
+					auto it = std::find_if(chimneysPos.begin(), chimneysPos.end(), [&](const Vec2 position)
+					{
+						return position == pos;
+					});
+					if (it == chimneysPos.end())
+					{
+						chimneysPos.push_back(block->convertToWorldSpace(pos));
+					}
+				}
+			}
+		}
+	}
+	return chimneysPos;
 }
 
 void Area::AddBlocks(int currentWidth)

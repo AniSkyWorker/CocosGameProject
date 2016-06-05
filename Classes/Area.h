@@ -10,17 +10,18 @@ class Area : public cocos2d::Sprite
 public:
 	Area();
 	virtual ~Area();
-	
-    static Area* Create();
+	static Area* Create();
+
 	void ActivateChimneys(Player* player);
-	
-    void СheckCollision(Player* player);
-	
+
+	void CheckCollision(Player* player);
+
 	void Move(float xMove);
-    void Reset();
+	void Reset();
+
+	std::vector<cocos2d::Point> GetChimneysPos();
 
 	CC_SYNTHESIZE(bool, m_startGame, StartGame);
-	CC_SYNTHESIZE(std::vector<cocos2d::Point>, m_chimneysPos, ChimneysPosition);
 
 private:
 	void InitTerrain();

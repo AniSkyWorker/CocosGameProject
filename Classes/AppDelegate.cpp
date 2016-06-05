@@ -29,7 +29,6 @@ bool AppDelegate::applicationDidFinishLaunching()
 		glview = GLViewImpl::create("RainDogs");
 		director->setOpenGLView(glview);
 	}
-	director->setDisplayStats(true);
 	director->setAnimationInterval(1.0f / 60);
 	Size screenSize = glview->getFrameSize();
 	Size designSize = Size(2048, 1536);
@@ -38,17 +37,17 @@ bool AppDelegate::applicationDidFinishLaunching()
 	std::vector<std::string> searchPaths;
 	if (screenSize.height > 768)
 	{
-		searchPaths.push_back("ipadhd");
+		searchPaths.push_back("2000");
 		director->setContentScaleFactor(1536/designSize.height);
 	}
 	else if (screenSize.height > 320)
 	{
-		searchPaths.push_back("ipad");
+		searchPaths.push_back("1000");
 		director->setContentScaleFactor(768/designSize.height);
 	}
 	else
 	{
-		searchPaths.push_back("iphone");
+		searchPaths.push_back("500");
 		director->setContentScaleFactor(380/designSize.height);
 	}
 	searchPaths.push_back("res");
@@ -56,7 +55,7 @@ bool AppDelegate::applicationDidFinishLaunching()
 	fileUtils->setSearchPaths(searchPaths);
 	
 	auto audioEngine = SimpleAudioEngine::getInstance();
-	audioEngine->preloadBackgroundMusic("1.mp3");
+	audioEngine->preloadBackgroundMusic("background3.mp3");
 	audioEngine->preloadEffect("falling.wav");
 	audioEngine->preloadEffect("cat.mp3");
 	audioEngine->preloadEffect("hitBuilding.wav");
@@ -64,6 +63,7 @@ bool AppDelegate::applicationDidFinishLaunching()
 	audioEngine->preloadEffect("crashing.wav");
 	audioEngine->preloadEffect("start.wav");
 	audioEngine->preloadEffect("openUmbrella.wav");
+	audioEngine->preloadEffect("sneeze.wav");
 
 	audioEngine->setBackgroundMusicVolume(0.5f);
 	audioEngine->setEffectsVolume(0.5f);
